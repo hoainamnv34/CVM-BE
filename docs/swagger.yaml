@@ -1,0 +1,1576 @@
+basePath: /
+definitions:
+  http_err.HTTPError:
+    properties:
+      code:
+        example: 400
+        type: integer
+      message:
+        example: status bad request
+        type: string
+    type: object
+  http_res.HTTPResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      data_count:
+        type: integer
+      message:
+        type: string
+    type: object
+  users.Finding:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      cwe:
+        type: integer
+      duplicate:
+        type: boolean
+      dynamic_finding:
+        type: boolean
+      file_path:
+        type: string
+      id:
+        type: integer
+      impact:
+        type: string
+      line:
+        type: integer
+      mitigation:
+        type: string
+      project_id:
+        type: integer
+      reference:
+        type: string
+      risk_accepted:
+        type: boolean
+      risk_description:
+        type: string
+      severity:
+        type: integer
+      static_finding:
+        type: boolean
+      title:
+        type: string
+      unique_id_from_tool:
+        type: string
+      updated_at:
+        type: string
+      vuln_id_from_tool:
+        type: string
+    type: object
+  users.PipelineEvaluation:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      severity_critical_score:
+        type: integer
+      severity_high_score:
+        type: integer
+      severity_low_score:
+        type: integer
+      severity_medium_score:
+        type: integer
+      threshold_score:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  users.PipelineRun:
+    properties:
+      branch_name:
+        type: string
+      commit_hash:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      pipeline_run_id:
+        type: integer
+      pipeline_run_url:
+        type: string
+      project_id:
+        type: integer
+      status:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  users.Project:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      pipeline_evaluation_id:
+        type: integer
+      project_group_id:
+        type: integer
+      repository_url:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  users.ProjectGroup:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  users.Test:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      pipeline_run_id:
+        type: integer
+      tool_type_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  users.ToolType:
+    properties:
+      api_key:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+      url:
+        type: string
+    type: object
+  users.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+info:
+  contact:
+    email: antonioalfa22@gmail.com
+    name: Antonio Paya Gonzalez
+    url: http://antoniopg.tk
+  description: API REST in Golang with Gin Framework
+  license:
+    name: MIT
+    url: https://github.com/antonioalfa22/bms-monitoring/blob/master/LICENSE
+  version: "1.0"
+paths:
+  /api/dashboard/finding-type-count/{id}:
+    get:
+      description: Get finding type count by Project ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get Findings By Project Dashboard
+      tags:
+      - Dashboard
+  /api/findings:
+    get:
+      description: Get findings by query
+      parameters:
+      - description: project_id
+        in: query
+        name: project_id
+        type: integer
+      - description: title
+        in: query
+        name: title
+        type: string
+      - description: risk_description
+        in: query
+        name: risk_description
+        type: string
+      - description: severity
+        in: query
+        name: severity
+        type: integer
+      - description: cwe
+        in: query
+        name: cwe
+        type: integer
+      - description: line
+        in: query
+        name: line
+        type: integer
+      - description: file_path
+        in: query
+        name: file_path
+        type: string
+      - description: vuln_id_from_tool
+        in: query
+        name: vuln_id_from_tool
+        type: string
+      - description: unique_id_from_tool
+        in: query
+        name: unique_id_from_tool
+        type: string
+      - description: mitigation
+        in: query
+        name: mitigation
+        type: string
+      - description: impact
+        in: query
+        name: impact
+        type: string
+      - description: reference
+        in: query
+        name: reference
+        type: string
+      - description: active
+        in: query
+        name: active
+        type: boolean
+      - description: dynamic_finding
+        in: query
+        name: dynamic_finding
+        type: boolean
+      - description: duplicate
+        in: query
+        name: duplicate
+        type: boolean
+      - description: risk_accepted
+        in: query
+        name: risk_accepted
+        type: boolean
+      - description: static_finding
+        in: query
+        name: static_finding
+        type: boolean
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get findings by query
+      tags:
+      - Finding
+    post:
+      consumes:
+      - application/json
+      description: Create finding
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.Finding'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Create finding
+      tags:
+      - Finding
+  /api/findings/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete finding by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Delete finding by ID
+      tags:
+      - Finding
+    get:
+      description: Get finding by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get finding by ID
+      tags:
+      - Finding
+    put:
+      consumes:
+      - application/json
+      description: Update finding by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.Finding'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Update finding by ID
+      tags:
+      - Finding
+  /api/findings/count:
+    get:
+      description: Count findings by query
+      parameters:
+      - description: project_id
+        in: query
+        name: project_id
+        type: integer
+      - description: title
+        in: query
+        name: title
+        type: string
+      - description: risk_description
+        in: query
+        name: risk_description
+        type: string
+      - description: severity
+        in: query
+        name: severity
+        type: integer
+      - description: cwe
+        in: query
+        name: cwe
+        type: integer
+      - description: line
+        in: query
+        name: line
+        type: integer
+      - description: file_path
+        in: query
+        name: file_path
+        type: string
+      - description: vuln_id_from_tool
+        in: query
+        name: vuln_id_from_tool
+        type: string
+      - description: unique_id_from_tool
+        in: query
+        name: unique_id_from_tool
+        type: string
+      - description: mitigation
+        in: query
+        name: mitigation
+        type: string
+      - description: impact
+        in: query
+        name: impact
+        type: string
+      - description: reference
+        in: query
+        name: reference
+        type: string
+      - description: reviewer
+        in: query
+        name: reviewer
+        type: integer
+      - description: active
+        in: query
+        name: active
+        type: boolean
+      - description: dynamic_finding
+        in: query
+        name: dynamic_finding
+        type: boolean
+      - description: duplicate
+        in: query
+        name: duplicate
+        type: boolean
+      - description: risk_accepted
+        in: query
+        name: risk_accepted
+        type: boolean
+      - description: static_finding
+        in: query
+        name: static_finding
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Count findings by query
+      tags:
+      - Finding
+  /api/findings/parent:
+    get:
+      description: Get findings by query parent
+      parameters:
+      - description: parent_id
+        in: query
+        name: parent_id
+        type: integer
+      - description: parent_type
+        in: query
+        name: parent_type
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get findings by query parent
+      tags:
+      - Finding
+  /api/findings/parent/count:
+    get:
+      description: Count findings by query parent
+      parameters:
+      - description: parent_id
+        in: query
+        name: parent_id
+        type: integer
+      - description: parent_type
+        in: query
+        name: parent_type
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Count findings by query parent
+      tags:
+      - Finding
+  /api/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a file
+      parameters:
+      - description: Project ID
+        in: query
+        name: project_id
+        required: true
+        type: string
+      - description: Pipeline run ID from Repo
+        in: query
+        name: pipeline_run_id
+        required: true
+        type: string
+      - description: Pipeline run URL from Repo
+        in: query
+        name: pipeline_run_url
+        type: string
+      - description: Commit hash
+        in: query
+        name: commit_hash
+        type: string
+      - description: Branch name
+        in: query
+        name: branch_name
+        type: string
+      - description: Tool name
+        in: query
+        name: tool_name
+        required: true
+        type: string
+      - description: Test title
+        in: query
+        name: test_title
+        required: true
+        type: string
+      - description: Service key
+        in: query
+        name: service_key
+        type: string
+      - description: file
+        in: formData
+        name: file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_err.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_err.HTTPError'
+      summary: Import Test Result
+  /api/pipeline-evaluations:
+    get:
+      description: Get pipeline evaluations by query
+      parameters:
+      - description: severity_critical_score
+        in: query
+        name: severity_critical_score
+        type: integer
+      - description: severity_high_score
+        in: query
+        name: severity_high_score
+        type: integer
+      - description: severity_medium_score
+        in: query
+        name: severity_medium_score
+        type: integer
+      - description: severity_low_score
+        in: query
+        name: severity_low_score
+        type: integer
+      - description: threshold_score
+        in: query
+        name: threshold_score
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get pipeline evaluations by query
+      tags:
+      - PipelineEvaluation
+    post:
+      consumes:
+      - application/json
+      description: Create pipeline evaluation
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.PipelineEvaluation'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Create pipeline evaluation
+      tags:
+      - PipelineEvaluation
+  /api/pipeline-evaluations/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete pipeline evaluation by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Delete pipeline evaluation by ID
+      tags:
+      - PipelineEvaluation
+    get:
+      description: Get pipeline evaluation by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get pipeline evaluation by ID
+      tags:
+      - PipelineEvaluation
+    put:
+      consumes:
+      - application/json
+      description: Update pipeline evaluation by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.PipelineEvaluation'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Update pipeline evaluation by ID
+      tags:
+      - PipelineEvaluation
+  /api/pipeline-evaluations/count:
+    get:
+      description: Count pipeline evaluations by query
+      parameters:
+      - description: severity_critical_score
+        in: query
+        name: severity_critical_score
+        type: integer
+      - description: severity_high_score
+        in: query
+        name: severity_high_score
+        type: integer
+      - description: severity_medium_score
+        in: query
+        name: severity_medium_score
+        type: integer
+      - description: severity_low_score
+        in: query
+        name: severity_low_score
+        type: integer
+      - description: threshold_score
+        in: query
+        name: threshold_score
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Count pipeline evaluations by query
+      tags:
+      - PipelineEvaluation
+  /api/pipeline-runs:
+    get:
+      description: Get pipeline runs by query
+      parameters:
+      - description: branch_name
+        in: query
+        name: branch_name
+        type: string
+      - description: commit_hash
+        in: query
+        name: commit_hash
+        type: string
+      - description: status
+        in: query
+        name: status
+        type: integer
+      - description: project_id
+        in: query
+        name: project_id
+        type: integer
+      - description: pipeline_run_url
+        in: query
+        name: pipeline_run_url
+        type: string
+      - description: pipeline_run_id
+        in: query
+        name: pipeline_run_id
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get pipeline runs by query
+      tags:
+      - PipelineRun
+    post:
+      consumes:
+      - application/json
+      description: Create pipeline run
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.PipelineRun'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Create pipeline run
+      tags:
+      - PipelineRun
+  /api/pipeline-runs/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete pipeline run by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Delete pipeline run by ID
+      tags:
+      - PipelineRun
+    get:
+      description: Get pipeline run by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get pipeline run by ID
+      tags:
+      - PipelineRun
+    put:
+      consumes:
+      - application/json
+      description: Update pipeline run by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.PipelineRun'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Update pipeline run by ID
+      tags:
+      - PipelineRun
+  /api/pipeline-runs/evaluate:
+    get:
+      description: Evaluate pipeline run by ID
+      parameters:
+      - description: Project ID
+        in: query
+        name: project_id
+        required: true
+        type: integer
+      - description: Pipeline run ID from Repo
+        in: query
+        name: pipeline_run_id
+        required: true
+        type: integer
+      - description: Latest Evaluation Request ?
+        in: query
+        name: latest_request
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Evaluate pipeline run by ID
+      tags:
+      - PipelineRun
+  /api/project-groups:
+    get:
+      description: Get project group by query
+      parameters:
+      - description: name
+        in: query
+        name: name
+        type: string
+      - description: description
+        in: query
+        name: description
+        type: string
+      - description: member
+        in: query
+        name: member
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get project group by query
+      tags:
+      - ProjectGroup
+    post:
+      consumes:
+      - application/json
+      description: Create project group
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.ProjectGroup'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Create project group
+      tags:
+      - ProjectGroup
+  /api/project-groups/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete project group by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Delete project group by ID
+      tags:
+      - ProjectGroup
+    get:
+      description: Get project group by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get project group by ID
+      tags:
+      - ProjectGroup
+    put:
+      consumes:
+      - application/json
+      description: Update project group by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.ProjectGroup'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Update project group by ID
+      tags:
+      - ProjectGroup
+  /api/projects:
+    get:
+      description: Get projects by query
+      parameters:
+      - description: name
+        in: query
+        name: name
+        type: string
+      - description: description
+        in: query
+        name: description
+        type: string
+      - description: member
+        in: query
+        name: member
+        type: integer
+      - description: project_group_id
+        in: query
+        name: project_group_id
+        type: integer
+      - description: repository_url
+        in: query
+        name: repository_url
+        type: string
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get projects by query
+      tags:
+      - Project
+    post:
+      consumes:
+      - application/json
+      description: Create project
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.Project'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Create project
+      tags:
+      - Project
+  /api/projects/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete project by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Delete project by ID
+      tags:
+      - Project
+    get:
+      description: Get project by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get project by ID
+      tags:
+      - Project
+    put:
+      consumes:
+      - application/json
+      description: Update project by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.Project'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Update project by ID
+      tags:
+      - Project
+  /api/tests:
+    get:
+      description: Get tests by query
+      parameters:
+      - description: name
+        in: query
+        name: name
+        type: string
+      - description: pipeline_run_id
+        in: query
+        name: pipeline_run_id
+        type: integer
+      - description: tool_type_id
+        in: query
+        name: tool_type_id
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get tests by query
+      tags:
+      - Test
+    post:
+      consumes:
+      - application/json
+      description: Create test
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.Test'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Create test
+      tags:
+      - Test
+  /api/tests/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete test by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Delete test by ID
+      tags:
+      - Test
+    get:
+      description: Get test by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get test by ID
+      tags:
+      - Test
+    put:
+      consumes:
+      - application/json
+      description: Update test by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.Test'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Update test by ID
+      tags:
+      - Test
+  /api/tool-types:
+    get:
+      description: Get tool types by query
+      parameters:
+      - description: name
+        in: query
+        name: name
+        type: string
+      - description: description
+        in: query
+        name: description
+        type: string
+      - description: url
+        in: query
+        name: url
+        type: string
+      - description: api_key
+        in: query
+        name: api_key
+        type: string
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get tool types by query
+      tags:
+      - ToolType
+    post:
+      consumes:
+      - application/json
+      description: Create tool type
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.ToolType'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Create tool type
+      tags:
+      - ToolType
+  /api/tool-types/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete tool type by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Delete tool type by ID
+      tags:
+      - ToolType
+    get:
+      description: Get tool type by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get tool type by ID
+      tags:
+      - ToolType
+    put:
+      consumes:
+      - application/json
+      description: Update tool type by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.ToolType'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Update tool type by ID
+      tags:
+      - ToolType
+  /api/users:
+    get:
+      description: Get users by query
+      parameters:
+      - description: name
+        in: query
+        name: name
+        type: string
+      - description: pipeline_run_id
+        in: query
+        name: pipeline_run_id
+        type: integer
+      - description: tool_type_id
+        in: query
+        name: tool_type_id
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get users by query
+      tags:
+      - User
+    post:
+      consumes:
+      - application/json
+      description: Create user
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Create user
+      tags:
+      - User
+  /api/users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Delete user by ID
+      tags:
+      - User
+    get:
+      description: Get user by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      security:
+      - Authorization Token: []
+      summary: Get user by ID
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Update user by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Update user by ID
+      tags:
+      - User
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
