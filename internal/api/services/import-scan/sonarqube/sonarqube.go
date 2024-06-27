@@ -2,25 +2,34 @@ package sonarqube
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	models "vulnerability-management/internal/pkg/models/findings"
+
+	"github.com/rs/zerolog/log"
 )
 
 type SonarQube struct{}
 
 func (p *SonarQube) Parser(filename string, servicekey string) ([]models.Finding, error) {
-	fmt.Println("import SonarQube")
+	log.Info().Msgf("Parser SonarQube")
 	findings, err := getFindings(servicekey)
 	if err != nil {
+		log.Error().Msgf(err.Error())
 		return nil, err
 	}
 
 	for _, finding := range findings {
-		fmt.Println("Hi")
-		fmt.Println(finding.Title)
+		log.Info().Msgf(finding.Title)
 	}
 	return findings, nil
+}
+
+func (p *SonarQube) GetToolTypes() string {
+	return "SonarQube"
+}
+
+func (p *SonarQube) RequiresFile() bool {
+	return false
 }
 
 func getFindings(servicekey string) ([]models.Finding, error) {
@@ -42,14 +51,14 @@ func getFindings(servicekey string) ([]models.Finding, error) {
 
 	findings1, err := client.ImportIssues(componentKey)
 	if err != nil {
-		log.Fatalf("Error finding issues: %v", err)
+		log.Error().Msgf("Error finding issues: %v", err)
 	} else {
 		findings = append(findings, findings1...)
 	}
 
 	findings2, err := client.ImportHotspots(componentKey)
 	if err != nil {
-		log.Fatalf("Error finding issues: %v", err)
+		log.Error().Msgf("Error finding issues: %v", err)
 	} else {
 		findings = append(findings, findings2...)
 	}
@@ -59,12 +68,4 @@ func getFindings(servicekey string) ([]models.Finding, error) {
 		fmt.Println(finding.Title)
 	}
 	return findings, nil
-}
-
-func (p *SonarQube) GetToolTypes() string {
-	return "SonarQube"
-}
-
-func (p *SonarQube) RequiresFile() bool {
-	return false
 }

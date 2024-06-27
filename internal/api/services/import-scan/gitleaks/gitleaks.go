@@ -4,25 +4,25 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	models "vulnerability-management/internal/pkg/models/findings"
+
+	"github.com/rs/zerolog/log"
 )
 
 type GitLeaks struct{}
 
 func (p *GitLeaks) Parser(filename string, servicekey string) ([]models.Finding, error) {
-	fmt.Println("import GitLeaks")
+	log.Info().Msgf("Parser GitLeaks")
 	findings, err := getFindings(filename)
 	if err != nil {
+		log.Error().Msgf(err.Error())
 		return nil, err
 	}
 
 	for _, finding := range findings {
-		fmt.Println("Hi")
-		fmt.Println(finding.Title)
-		// fmt.Println(finding.TestID)
+		log.Info().Msgf(finding.Title)
 	}
 	return findings, nil
 }
@@ -30,7 +30,7 @@ func (p *GitLeaks) Parser(filename string, servicekey string) ([]models.Finding,
 func getFindings(filename string) ([]models.Finding, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		fmt.Println("open file error")
+		log.Error().Msgf("open file error")
 		return nil, err
 	}
 	defer file.Close()
@@ -54,7 +54,7 @@ func getFindings(filename string) ([]models.Finding, error) {
 				return nil, err
 			}
 		} else {
-			return nil, errors.New("Format is not recognized for Gitleaks")
+			return nil, fmt.Errorf("getFindings: %s", "Format is not recognized for Gitleaks")
 		}
 	}
 

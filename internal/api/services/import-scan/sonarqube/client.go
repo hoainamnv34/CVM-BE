@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 
 	// "time"
 	models "vulnerability-management/internal/pkg/models/findings"
 
 	"github.com/k3a/html2text"
+	"github.com/rs/zerolog/log"
 )
 
 type SonarQubeClient struct {
@@ -34,28 +35,6 @@ type Engagement struct {
 type Product struct {
 	Name string
 }
-
-// type Finding struct {
-// 	Title            string
-// 	Cwe              string
-// 	Description      string
-// 	Test             Test
-// 	Severity         string
-// 	References       string
-// 	FilePath         string
-// 	Line             int
-// 	Active           bool
-// 	Verified         bool
-// 	FalsePositive    bool
-// 	Duplicate        bool
-// 	OutOfScope       bool
-// 	Mitigated        *string
-// 	Mitigation       string
-// 	Impact           string
-// 	StaticFinding    bool
-// 	SonarqubeIssue   *SonarqubeIssue
-// 	UniqueIdFromTool string
-// }
 
 type SonarqubeIssue struct {
 	Key    string
@@ -132,23 +111,14 @@ func (c *SonarQubeClient) ImportHotspots(projectKey string) ([]models.Finding, e
 	// Fetch hotspots for the component
 	hotspots, err := c.FindHotspots(projectKey, "")
 	if err != nil {
+		log.Error().Msgf("failed to fetch hotspots: %v", err.Error())
 		return nil, fmt.Errorf("failed to fetch hotspots: %v", err)
 	}
 
-	log.Printf("Found %d hotspots for project %s", len(hotspots), projectKey)
-
-	// Remove /api from SonarQube URL to get base URL
-	// sonarURL := strings.TrimSuffix(c.SonarAPIURL, "/api")
+	log.Info().Msgf("Found %d hotspots for project %s", len(hotspots), projectKey)
 
 	// Iterate over hotspots and create Finding objects
 	for _, hotspot := range hotspots {
-		// status := hotspot.Status
-
-		// // Skip reviewed hotspots
-		// if client.isReviewed(status) {
-		// 	continue
-		// }
-
 		// Determine severity based on vulnerabilityProbability
 		var severity uint64
 		switch hotspot.VulnerabilityProbability {
@@ -169,37 +139,28 @@ func (c *SonarQubeClient) ImportHotspots(projectKey string) ([]models.Finding, e
 			title = title[:507] + "..."
 		}
 
-		// Prepare references including SonarQube permalink and rule references
-		// var references string
-		// sonarqubePermalink := fmt.Sprintf("[Hotspot permalink](%s/security_hotspots?id=%s&hotspots=%s) \n", sonarURL, hotspot.Project, hotspot.Key)
-		// references = sonarqubePermalink + client.getReferences(hotspot.RuleKey)
-
 		// Fetch additional rule details
-		// rule, err := client.getHotspotRule(hotspot.Key)
-		// if err != nil {
-		// 	return nil, fmt.Errorf("failed to fetch hotspot rule details: %v", err)
-		// }
+		rule, err := c.getHotspotRule(hotspot.Key)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch hotspot rule details: %v", err)
+		}
 
-		// Clean rule description and CWE
+		log.Info().Msgf("hotspot: %s", rule)
+
 		description := ""
-		// description := c.cleanRuleDescriptionHTML(rule.VulnerabilityDescription)
+		if rawHtml, ok := rule["vulnerabilityDescription"].(string); ok {
+			description = c.cleanRuleDescriptionHtml(rawHtml)
+		}
+
 		var cwe uint64 = 0
-		// cwe := c.cleanCWE(rule.FixRecommendations)
-
-		// Update or create Sonarqube_Issue and associate with Finding
-		// sonarqubeIssue, _ := SonarqubeIssue.objects.updateOrCreate(
-		// 	Key: hotspot.Key,
-		// 	Status: status,
-		// 	Type: "SECURITY_HOTSPOT",
-		// )
-
-		// Only assign the SonarQube_issue to the first finding related
-		// to the issue
-		// if Finding.objects.filter(
-		// 	SonarqubeIssue: sonarqubeIssue,
-		// ).exists() {
-		// 	sonarqubeIssue = nil
-		// }
+		if rawHtml, ok := rule["fixRecommendations"].(string); ok {
+			a, err := c.cleanCWE(rawHtml)
+			if err != nil {
+				log.Error().Msgf(err.Error())
+			} else {
+				cwe = a
+			}
+		}
 
 		// Create Finding object and append to items
 		find := models.Finding{
@@ -209,10 +170,9 @@ func (c *SonarQubeClient) ImportHotspots(projectKey string) ([]models.Finding, e
 			// TestID:          testID,
 			Severity: severity,
 			// References:         references,
-			FilePath: hotspot.Component,
-			Line:     hotspot.Line,
-			Active:   true,
-			// Verified:         c.isConfirmed(status),
+			FilePath:         hotspot.Component,
+			Line:             hotspot.Line,
+			Active:           true,
 			Duplicate:        false,
 			StaticFinding:    true,
 			UniqueIDFromTool: fmt.Sprintf("hotspot:%s", hotspot.Key),
@@ -228,7 +188,7 @@ func (c *SonarQubeClient) ImportIssues(projectKey string) ([]models.Finding, err
 
 	// client, config := c.prepareClient(test)
 
-	issues, err := c.FindIssues(projectKey, "BUG", "")
+	issues, err := c.FindIssues(projectKey, "VULNERABILITY", "")
 	if err != nil {
 		fmt.Printf("Error finding issues: %v", err)
 		return nil, err
@@ -253,16 +213,16 @@ func (c *SonarQubeClient) ImportIssues(projectKey string) ([]models.Finding, err
 
 		componentKey := issue.Component
 		line := issue.Line
-		// ruleId := issue.Rule
-		// rule, err := c.getRule(ruleId)
-		// if err != nil {
-		// 	log.Printf("Error getting rule: %v", err)
-		// 	continue
-		// }
+		ruleId := issue.Rule
+		rule, err := c.getRule(ruleId)
+		if err != nil {
+			log.Error().Msgf("Error getting rule: %v", err)
+			continue
+		}
 
 		severity := c.convertSonarSeverity(issue.Severity)
 		// sonarqubePermalink := fmt.Sprintf("[Issue permalink](%s/project/issues?issues=%s&open=%s&resolved=%s&id=%s) \n", sonarUrl, issue.Key, issue.Key, issue.Status, issue.Project)
-
+		log.Info().Msgf("Rule: %s", rule)
 		var description, references string
 		var cwe uint64
 		// if htmlDesc, ok := rule["htmlDesc"].(string); ok {
@@ -462,12 +422,30 @@ func (c *SonarQubeClient) cleanRuleDescriptionHtml(rawHtml string) string {
 	return text
 }
 
-func (c *SonarQubeClient) getRule(ruleId string) (string, error) {
+func (c *SonarQubeClient) cleanCWE(rawHTML string) (uint64, error) {
+	// Define the regular expression
+	re := regexp.MustCompile(`CWE-(\d+)`)
+
+	// Search for the pattern in the raw HTML
+	matches := re.FindStringSubmatch(rawHTML)
+	if len(matches) > 1 {
+		// Convert the matched CWE number to an integer
+		cweNumber, err := strconv.Atoi(matches[1])
+		if err != nil {
+			return 0, err
+		}
+		return uint64(cweNumber), nil
+	}
+
+	return 0, fmt.Errorf("CWE number not found in the provided HTML")
+}
+
+func (c *SonarQubeClient) getRule(ruleId string) (map[string]interface{}, error) {
 	requestFilter := map[string]string{"key": ruleId}
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/rules/show", c.SonarAPIURL), nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -483,23 +461,54 @@ func (c *SonarQubeClient) getRule(ruleId string) (string, error) {
 
 	resp, err := c.Session.Do(req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("Unable to get the rule %s due to %d - %s", ruleId, resp.StatusCode, resp.Status)
+		return nil, fmt.Errorf("Unable to get the rule %s due to %d - %s", ruleId, resp.StatusCode, resp.Status)
 	}
 
 	var data map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return data["rule"].(string), nil
+	return data["rule"].(map[string]interface{}), nil
 }
 
-func (c *SonarQubeClient) isConfirmed(state string) bool {
-	lowerState := strings.ToLower(state)
-	return lowerState == "confirmed" || lowerState == "accepted" || lowerState == "detected"
+func (c *SonarQubeClient) getHotspotRule(ruleID string) (map[string]interface{}, error) {
+
+	url := fmt.Sprintf("%s/hotspots/show", c.SonarAPIURL)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	for key, value := range c.DefaultHeaders {
+		req.Header.Set(key, value)
+	}
+
+	q := req.URL.Query()
+	q.Add("hotspot", ruleID)
+	req.URL.RawQuery = q.Encode()
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Unable to get the hotspot rule %s due to %d - %s", ruleID, resp.StatusCode, resp.Status)
+	}
+
+	var jsonResponse map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&jsonResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonResponse["rule"].(map[string]interface{}), nil
 }

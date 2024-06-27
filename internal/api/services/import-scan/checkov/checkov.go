@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	models "vulnerability-management/internal/pkg/models/findings"
+
 	"github.com/rs/zerolog/log"
 )
 
@@ -17,6 +18,7 @@ func (p *Checkov) Parser(filename string, servicekey string) ([]models.Finding, 
 	findings, err := getFindings(filename)
 	if err != nil {
 		log.Error().Msgf(err.Error())
+		return nil, err
 	}
 
 	for _, finding := range findings {

@@ -192,9 +192,14 @@ func getFindingFromVulnerability(dependency Dependency, relatedDependency *Depen
 	}
 
 	description := vulnerability.Description
+	vulnID := ""
 	source := vulnerability.Source
 	if source != "" {
 		description += "\n**Source:** " + source
+
+	}
+	if source == "NVD" {
+		vulnID = name
 	}
 
 	cwe := 1035
@@ -238,6 +243,7 @@ func getFindingFromVulnerability(dependency Dependency, relatedDependency *Depen
 		Title:    fmt.Sprintf("%s:%s | %s", componentName, componentVersion, name),
 		FilePath: dependencyFilename,
 		// TestID:          test,
+		VulnIDFromTool:  vulnID,
 		CWE:             uint64(cwe),
 		RiskDescription: description,
 		Severity:        mapSeverity(severity),

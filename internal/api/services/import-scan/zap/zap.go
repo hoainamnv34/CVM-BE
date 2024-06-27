@@ -2,13 +2,13 @@ package zap
 
 import (
 	"encoding/xml"
-	"fmt"
 	"io"
-	"log"
 	"os"
 	"strconv"
 	"strings"
 	models "vulnerability-management/internal/pkg/models/findings"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Scan struct {
@@ -47,15 +47,15 @@ type Instance struct {
 type Zap struct{}
 
 func (p *Zap) Parser(filename string, servicekey string) ([]models.Finding, error) {
-	fmt.Println("import Zap")
+	log.Info().Msgf("Parser Zap")
 	findings, err := getFindings(filename)
 	if err != nil {
-		fmt.Println("looi1")
+		log.Error().Msgf(err.Error())
+		return nil, err
 	}
 
 	for _, finding := range findings {
-		fmt.Println("Hi")
-		fmt.Println(finding.Title)
+		log.Info().Msgf(finding.Title)
 	}
 	return findings, nil
 }
@@ -75,10 +75,11 @@ func getFindings(filename string) ([]models.Finding, error) {
 	xmlFile, err := os.Open(filename)
 	// if we os.Open returns an error then handle it
 	if err != nil {
-		fmt.Println(err)
+		log.Error().Msgf("open file error")
+		return nil, err
 	}
 
-	fmt.Println("Successfully Opened users.xml")
+	log.Info().Msgf("Successfully Opened users.xml")
 	// defer the closing of our xmlFile so that we can parse it later on
 	defer xmlFile.Close()
 
@@ -92,7 +93,17 @@ func getFindings(filename string) ([]models.Finding, error) {
 		return nil, err
 	}
 
+	var cwe uint64
 	for _, alertItem := range scan.Site.Alerts {
+
+		a, err := stringToUint64(alertItem.CWEID)
+
+		if err != nil {
+			cwe = 0
+		} else {
+			cwe = a
+		}
+
 		finding := models.Finding{
 			// TestID:          test,
 			Title:           alertItem.Alert,
@@ -103,10 +114,7 @@ func getFindings(filename string) ([]models.Finding, error) {
 			DynamicFinding:  true,
 			StaticFinding:   false,
 			VulnIDFromTool:  alertItem.PluginID,
-		}
-
-		if cweID := alertItem.CWEID; cweID != "" && strings.Contains(cweID, "CWE-") {
-			finding.CWE = parseCWEID(cweID)
+			CWE:             cwe,
 		}
 
 		// finding.UnsavedEndpoints = make([]Endpoint, 0)
@@ -136,21 +144,6 @@ func html2text(html string) string {
 	return html // Placeholder function, needs implementation
 }
 
-func parseCWEID(cweID string) uint64 {
-	cweID = strings.TrimSpace(cweID)
-	if cweID == "" {
-		return 0 // Return 0 or handle error as per your requirement
-	}
-
-	id, err := strconv.ParseUint(cweID, 10, 64)
-	if err != nil {
-		fmt.Println("Error parsing CWE ID:", err)
-		return 0 // Return 0 or handle error as per your requirement
-	}
-
-	return id
-}
-
 func mapSeverity(severity string) uint64 {
 	severityMapping := map[string]uint64{
 		"3": 4, //High
@@ -163,4 +156,13 @@ func mapSeverity(severity string) uint64 {
 	}
 	log.Printf("Warning: Unknown severity value detected '%s'. Bypass to 'Medium' value", severity)
 	return 3
+}
+
+func stringToUint64(s string) (uint64, error) {
+	// Parse the string as a base 10 unsigned integer (uint64)
+	value, err := strconv.ParseUint(s, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return value, nil
 }

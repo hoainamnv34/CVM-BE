@@ -4,25 +4,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strconv"
 	"strings"
 	models "vulnerability-management/internal/pkg/models/findings"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Trivy struct{}
 
 func (p *Trivy) Parser(filename string, servicekey string) ([]models.Finding, error) {
-	fmt.Println("import Trivy")
+	log.Info().Msgf("Parser Trivy")
 	findings, err := getFindings(filename)
 	if err != nil {
-		fmt.Println("looi1")
+		log.Error().Msgf(err.Error())
+		return nil, err
 	}
 
 	for _, finding := range findings {
-		fmt.Println("Hi")
-		fmt.Println(finding.Title)
+		log.Info().Msgf(finding.Title)
 	}
 	return findings, nil
 }
@@ -41,6 +42,7 @@ func parseJSON(jsonOutput []byte) ([]interface{}, error) {
 	// Attempt to deserialize JSON
 	err := json.Unmarshal(jsonOutput, &deserialized)
 	if err != nil {
+		log.Error().Msgf("failed to parse JSON:" + err.Error())
 		return nil, fmt.Errorf("failed to parse JSON: %v", err)
 	}
 
@@ -57,14 +59,14 @@ func parseJSON(jsonOutput []byte) ([]interface{}, error) {
 func getFindings(filename string) ([]models.Finding, error) {
 	jsonFile, err := os.Open(filename)
 	if err != nil {
-		log.Fatalf("Error opening JSON file: %v", err)
+		log.Error().Msgf("Error opening JSON file: %v", err)
 	}
 	defer jsonFile.Close()
 
 	// Read JSON file
 	jsonOutput, err := io.ReadAll(jsonFile)
 	if err != nil {
-		log.Fatalf("Error reading JSON file: %v", err)
+		log.Error().Msgf("Error reading JSON file: %v", err)
 	}
 	findings := []models.Finding{}
 
@@ -177,14 +179,9 @@ func getItems(results []interface{}, artifactType string) []models.Finding {
 							Reference:       references,
 							RiskDescription: description,
 							Mitigation:      mitigation,
-							// ComponentName:           packageName,
-							// ComponentVersion:        installedVersion,
-							// Cvssv3:                  cvssv3,
-							StaticFinding:  true,
-							DynamicFinding: false,
-							// Tags:                    []string{targetType, targetClass},
-							// Service:                 service_name,
-							// UnsavedVulnerabilityIds: []string{vulnID},
+							StaticFinding:   true,
+							DynamicFinding:  false,
+							VulnIDFromTool:  vulnID,
 						}
 
 						items = append(items, finding)
