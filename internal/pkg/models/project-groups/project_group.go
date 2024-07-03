@@ -14,12 +14,10 @@ type ProjectGroup struct {
 func (m *ProjectGroup) BeforeCreate() error {
 	m.CreatedAt = time.Now()
 	m.UpdatedAt = time.Now()
-
 	return nil
 }
 
 func (m *ProjectGroup) BeforeUpdate() error {
 	m.UpdatedAt = time.Now()
-
 	return nil
 }

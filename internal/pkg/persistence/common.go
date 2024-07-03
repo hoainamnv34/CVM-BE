@@ -6,6 +6,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+
 // Create
 func Create(value interface{}) error {
 	return db.GetDB().Create(value).Error

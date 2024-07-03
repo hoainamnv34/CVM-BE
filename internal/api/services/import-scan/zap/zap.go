@@ -106,15 +106,15 @@ func getFindings(filename string) ([]models.Finding, error) {
 
 		finding := models.Finding{
 			// TestID:          test,
-			Title:           alertItem.Alert,
-			RiskDescription: html2text(alertItem.Description),
-			Severity:        mapSeverity(alertItem.RiskCode),
-			Mitigation:      html2text(alertItem.Solution),
-			Reference:       html2text(alertItem.Reference),
-			DynamicFinding:  true,
-			StaticFinding:   false,
-			VulnIDFromTool:  alertItem.PluginID,
-			CWE:             cwe,
+			Title:          alertItem.Alert,
+			Description:    html2text(alertItem.Description),
+			Severity:       mapSeverity(alertItem.RiskCode),
+			Mitigation:     html2text(alertItem.Solution),
+			Reference:      html2text(alertItem.Reference),
+			DynamicFinding: true,
+			StaticFinding:  false,
+			VulnIDFromTool: alertItem.PluginID,
+			CWE:            cwe,
 		}
 
 		// finding.UnsavedEndpoints = make([]Endpoint, 0)

@@ -1,9 +1,7 @@
-CREATE TABLE "users" (
+CREATE TABLE "tool_types" (
   "id" SERIAL PRIMARY KEY,
-  "username" TEXT,
-  "password" TEXT,
-  "full_name" TEXT,
-  "email" TEXT,
+  "name" TEXT,
+  "description" TEXT,
   "updated_at" TIMESTAMPTZ DEFAULT NOW(),
   "created_at" TIMESTAMPTZ DEFAULT NOW()
 );

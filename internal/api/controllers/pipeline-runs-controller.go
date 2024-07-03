@@ -1,16 +1,13 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
-	pipelinerunservice "vulnerability-management/internal/api/services/pipeline-runs"
+	pipeline_run_services "vulnerability-management/internal/api/services/pipeline-run"
 	models "vulnerability-management/internal/pkg/models/pipeline-runs"
 	pipeline_runs_models "vulnerability-management/internal/pkg/models/pipeline-runs"
 	persistence "vulnerability-management/internal/pkg/persistence"
-	helpers "vulnerability-management/pkg/helpers"
-	http_err "vulnerability-management/pkg/http-err"
 	http_res "vulnerability-management/pkg/http-res"
 
 	"github.com/gin-gonic/gin"
@@ -22,25 +19,26 @@ import (
 // @Description Get pipeline run by ID
 // @Produce     json
 // @Param       id  path     integer true "id" min(1)
-// @Success     200             {object} http_res.HTTPResponse
+// @Success     200           {object} http_res.HTTPResponse
 // @Router      /api/pipeline-runs/{id} [get]
-// @Security    Authorization Token
 // @Tags        PipelineRun
 func GetPipelineRunByID(c *gin.Context) {
+	log.Info().Msg("GetPipelineRunByID initiated")
+
 	id := c.Param("id")
 
 	pipelineRun, err := persistence.PipelineRunRepo.Get(id)
 	if err != nil {
-		log.Error().Msgf(err.Error())
+		log.Error().Err(err).Str("id", id).Msg("Error fetching pipeline run in GetPipelineRunByID")
 
 		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
 			Code:    http.StatusNotFound,
 			Message: "Pipeline run is not found",
 		})
-
 		return
 	}
 
+	log.Info().Str("id", id).Msg("Pipeline run fetched successfully in GetPipelineRunByID")
 	c.JSON(http.StatusOK, http_res.HTTPResponse{
 		Code:    http.StatusOK,
 		Message: "Success",
@@ -52,73 +50,42 @@ func GetPipelineRunByID(c *gin.Context) {
 // @Summary     Get pipeline runs by query
 // @Description Get pipeline runs by query
 // @Produce     json
-// @Param       branch_name      query    string  false "branch_name"
-// @Param       commit_hash      query    string  false "commit_hash"
-// @Param       status           query    integer false "status"
-// @Param       project_id       query    integer false "project_id"
-// @Param       pipeline_run_url query    string  false "pipeline_run_url"
-// @Param       pipeline_run_id  query    integer false "pipeline_run_id"
-// @Param       page             query    integer false "page"
-// @Param       size             query    integer false "size"
-// @Success     200              {object} http_res.HTTPResponse
+// @Param       branch_name query    string  false "branch_name"
+// @Param       commit_hash query    string  false "commit_hash"
+// @Param       status      query    integer false "status"
+// @Param       project_id  query    integer false "project_id"
+// @Param       run_url     query    string  false "run_url"
+// @Param       run_id      query    integer false "run_id"
+// @Param       page        query    integer false "page"
+// @Param       size        query    integer false "size"
+// @Success     200         {object} http_res.HTTPResponse
 // @Router      /api/pipeline-runs [get]
-// @Security    Authorization Token
 // @Tags        PipelineRun
 func GetPipelineRuns(c *gin.Context) {
-	query := models.PipelineRun{}
+	log.Info().Msg("GetPipelineRuns initiated")
 
+	query := models.PipelineRun{}
 	err := c.ShouldBindQuery(&query)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Msg("Error binding query parameters in GetPipelineRuns")
 		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
 			Code:    http.StatusBadRequest,
 			Message: "Invalid query parameters",
 		})
-
 		return
 	}
 
-	where := map[string]interface{}{}
-
-	if query.BranchName != "" {
-		where["branch_name"] = query.BranchName
-	}
-
-	if query.CommitHash != "" {
-		where["commit_hash"] = query.CommitHash
-	}
-
-	if query.Status != 0 {
-		where["status"] = query.Status
-	}
-
-	if query.ProjectID != 0 {
-		where["project_id"] = query.ProjectID
-	}
-
-	if query.PipelineRunID != 0 {
-		where["pipeline_run_id"] = query.PipelineRunID
-	}
-
-	if query.PipelineRunURL != "" {
-		where["pipeline_run_url"] = query.PipelineRunURL
-	}
-
-	offset, limit := helpers.GetPagination(c.Query("page"), c.Query("size"))
-
-	pipelineRuns, count, err := persistence.PipelineRunRepo.Query(where, offset, limit)
+	pipelineRuns, count, err := pipeline_run_services.GetPipelineRuns(query, c.Query("page"), c.Query("size"))
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Msg("Error querying pipeline runs in GetPipelineRuns")
 		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
 			Code:    http.StatusNotFound,
 			Message: "Pipeline runs not found",
 		})
-
 		return
 	}
 
+	log.Info().Int("count", count).Msg("Pipeline runs fetched successfully in GetPipelineRuns")
 	c.JSON(http.StatusOK, http_res.HTTPResponse{
 		Code:      http.StatusOK,
 		Message:   "Success",
@@ -127,214 +94,63 @@ func GetPipelineRuns(c *gin.Context) {
 	})
 }
 
+// PipelineRunRequest represents the payload for creating and updating a pipeline run.
+type PipelineRunRequest struct {
+	BranchName string `json:"branch_name" binding:"required"`
+	CommitHash string `json:"commit_hash" binding:"required"`
+	Status     uint64 `json:"status" binding:"required"`
+	ProjectID  uint64 `json:"project_id" binding:"required"`
+	RunURL     string `json:"run_url"`
+	RunID      uint64 `json:"run_id" binding:"required"`
+}
+
 // CreatePipelineRun godoc
 // @Summary     Create pipeline run
 // @Description Create pipeline run
 // @Accept      json
 // @Produce     json
-// @Param       body body     models.PipelineRun true "body"
+// @Param       body body     PipelineRunRequest true "Body"
 // @Success     201  {object} http_res.HTTPResponse
 // @Router      /api/pipeline-runs [post]
 // @Tags        PipelineRun
 func CreatePipelineRun(c *gin.Context) {
-	body := models.PipelineRun{}
+	log.Info().Msg("CreatePipelineRun initiated")
+
+	var body PipelineRunRequest
 	err := c.BindJSON(&body)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Msg("Error binding JSON in CreatePipelineRun")
 		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
 			Code:    http.StatusBadRequest,
 			Message: "Invalid body parameters",
 		})
-
 		return
 	}
 
 	pipelineRun := models.PipelineRun{
-		BranchName:     body.BranchName,
-		CommitHash:     body.CommitHash,
-		Status:         body.Status,
-		ProjectID:      body.ProjectID,
-		PipelineRunURL: body.PipelineRunURL,
-		PipelineRunID:  body.PipelineRunID,
+		BranchName: body.BranchName,
+		CommitHash: body.CommitHash,
+		Status:     body.Status,
+		ProjectID:  body.ProjectID,
+		RunURL:     body.RunURL,
+		RunID:      body.RunID,
 	}
 
 	res, err := persistence.PipelineRunRepo.Add(&pipelineRun)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Msg("Error adding pipeline run in CreatePipelineRun")
 		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
 			Code:    http.StatusBadRequest,
 			Message: "Bad request",
 		})
-
 		return
 	}
 
+	log.Info().Msg("Pipeline run created successfully in CreatePipelineRun")
 	c.JSON(http.StatusCreated, http_res.HTTPResponse{
 		Code:    http.StatusCreated,
 		Message: "Success",
 		Data:    res,
-	})
-}
-
-type evaluateRequest struct {
-	ProJectID     uint64 `json:"project_id" form:"project_id"`
-	PipelineRunID uint64 `json:"pipeline_run_id" form:"pipeline_run_id"`
-	LatestRequest bool   `json:"latest_request" form:"latest_request"`
-}
-
-// EvaluatePipelineRun godoc
-// @Summary     Evaluate pipeline run by ID
-// @Description Evaluate pipeline run by ID
-// @Produce     json
-// @Param       project_id      query    int  true "Project ID"
-// @Param       pipeline_run_id query    int  true "Pipeline run ID from Repo"
-// @Param       latest_request  query    bool true "Latest Evaluation Request ?"
-// @Success     200 {object} http_res.HTTPResponse
-// @Router      /api/pipeline-runs/evaluate [get]
-// @Security    Authorization Token
-// @Tags        PipelineRun
-func EvaluatePipelineRun(c *gin.Context) {
-	fmt.Println("xxxx")
-	query := evaluateRequest{}
-	err := c.ShouldBindQuery(&query)
-	if err != nil {
-		log.Error().Msgf(err.Error())
-
-		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
-			Code:    http.StatusBadRequest,
-			Message: "Invalid query parameters",
-		})
-		return
-	}
-
-	fmt.Println(query)
-
-	type Evaluate struct {
-		Evaluate       bool   `json:"evaluate" form:"evaluate"`
-		ThresholdScore uint64 `json:"threshold_score" form:"threshold_score"`
-		Score          uint64 `json:"score" form:"score"`
-	}
-
-	//get piepline-run
-	pipelineRuns, err := pipelinerunservice.GetPipelineRuns(pipeline_runs_models.PipelineRun{
-		PipelineRunID: query.PipelineRunID,
-		ProjectID:     query.ProJectID,
-	}, "1", "100")
-
-	pipelineRun := pipelineRuns[0]
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, http_err.HTTPError{
-			Code: http.StatusInternalServerError, 
-			Message: "Unable to get pipeline_run"})
-		return
-	}
-
-	project, err := persistence.ProjectRepo.Get(strconv.Itoa(int(pipelineRun.ProjectID)))
-	if err != nil {
-		log.Error().Msgf(err.Error())
-
-		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
-			Code:    http.StatusNotFound,
-			Message: "Project is not found",
-		})
-
-		return
-	}
-
-	pipelineEvaluation, err := persistence.PipelineEvaluationRepo.Get(strconv.Itoa(int(project.PipelineEvaluationID)))
-	if err != nil {
-		log.Error().Msgf(err.Error())
-
-		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
-			Code:    http.StatusNotFound,
-			Message: "Pipeline evaluation is not found",
-		})
-
-		return
-	}
-
-	count1, err := persistence.FindingRepo.CountByPipelineRunIDAndSeverity(pipelineRun.ID, 1)
-	if err != nil {
-		log.Error().Msgf(err.Error())
-
-		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
-			Code:    http.StatusBadRequest,
-			Message: "Findings not found",
-		})
-
-		return
-	}
-
-	count2, err := persistence.FindingRepo.CountByPipelineRunIDAndSeverity(pipelineRun.ID, 2)
-	if err != nil {
-		log.Error().Msgf(err.Error())
-
-		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
-			Code:    http.StatusBadRequest,
-			Message: "Findings not found",
-		})
-
-		return
-	}
-
-	count3, err := persistence.FindingRepo.CountByPipelineRunIDAndSeverity(pipelineRun.ID, 3)
-	if err != nil {
-		log.Error().Msgf(err.Error())
-
-		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
-			Code:    http.StatusBadRequest,
-			Message: "Findings not found",
-		})
-
-		return
-	}
-
-	count4, err := persistence.FindingRepo.CountByPipelineRunIDAndSeverity(pipelineRun.ID, 4)
-	if err != nil {
-		log.Error().Msgf(err.Error())
-
-		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
-			Code:    http.StatusBadRequest,
-			Message: "Findings not found",
-		})
-
-		return
-	}
-
-	count5, err := persistence.FindingRepo.CountByPipelineRunIDAndSeverity(pipelineRun.ID, 5)
-	if err != nil {
-		log.Error().Msgf(err.Error())
-
-		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
-			Code:    http.StatusBadRequest,
-			Message: "Findings not found",
-		})
-
-		return
-	}
-
-	score := count1*0 + count2*int(pipelineEvaluation.SeverityLowScore) + count3*int(pipelineEvaluation.SeverityMediumScore) + count4*int(pipelineEvaluation.SeverityHighScore) + count5*int(pipelineEvaluation.SeverityCriticalScore)
-
-	evaluation := true
-
-	if score > int(pipelineEvaluation.ThresholdScore) {
-		evaluation = false
-	}
-
-	if query.LatestRequest == true {
-		// TODO
-	}
-
-	c.JSON(http.StatusOK, http_res.HTTPResponse{
-		Code:    http.StatusOK,
-		Message: "Success",
-		Data: Evaluate{
-			Evaluate:       evaluation,
-			ThresholdScore: pipelineEvaluation.ThresholdScore,
-			Score:          uint64(score),
-		},
 	})
 }
 
@@ -343,75 +159,66 @@ func EvaluatePipelineRun(c *gin.Context) {
 // @Description Update pipeline run by ID
 // @Accept      json
 // @Produce     json
-// @Param       id   path     integer            true "id" min(1)
-// @Param       body body     models.PipelineRun true "body"
+// @Param       id   path     integer            true "ID"
+// @Param       body body     PipelineRunRequest true "Body"
 // @Success     200  {object} http_res.HTTPResponse
 // @Router      /api/pipeline-runs/{id} [put]
 // @Tags        PipelineRun
 func UpdatePipelineRun(c *gin.Context) {
-	body := models.PipelineRun{}
+	log.Info().Msg("UpdatePipelineRun initiated")
+
+	var body PipelineRunRequest
 	err := c.BindJSON(&body)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Msg("Error binding JSON in UpdatePipelineRun")
 		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
 			Code:    http.StatusBadRequest,
 			Message: "Invalid body parameters",
 		})
-
 		return
 	}
 
 	id := c.Param("id")
-
 	pipelineRun, err := persistence.PipelineRunRepo.Get(id)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Str("id", id).Msg("Error fetching pipeline run in UpdatePipelineRun")
 		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
 			Code:    http.StatusNotFound,
-			Message: "Pipeline run is not found",
+			Message: "Pipeline run not found",
 		})
-
 		return
 	}
 
 	if body.BranchName != "" {
 		pipelineRun.BranchName = body.BranchName
 	}
-
 	if body.CommitHash != "" {
 		pipelineRun.CommitHash = body.CommitHash
 	}
-
 	if body.Status != 0 {
 		pipelineRun.Status = body.Status
 	}
-
 	if body.ProjectID != 0 {
 		pipelineRun.ProjectID = body.ProjectID
 	}
-
-	if body.PipelineRunURL != "" {
-		pipelineRun.PipelineRunURL = body.PipelineRunURL
+	if body.RunURL != "" {
+		pipelineRun.RunURL = body.RunURL
 	}
-
-	if body.PipelineRunID != 0 {
-		pipelineRun.PipelineRunID = body.PipelineRunID
+	if body.RunID != 0 {
+		pipelineRun.RunID = body.RunID
 	}
 
 	err = persistence.PipelineRunRepo.Update(pipelineRun)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
-		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
-			Code:    http.StatusNotFound,
-			Message: "Pipeline run is not found",
+		log.Error().Err(err).Str("id", id).Msg("Error updating pipeline run in UpdatePipelineRun")
+		c.JSON(http.StatusInternalServerError, http_res.HTTPResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Unable to update pipeline run",
 		})
-
 		return
 	}
 
+	log.Info().Str("id", id).Msg("Pipeline run updated successfully in UpdatePipelineRun")
 	c.JSON(http.StatusOK, http_res.HTTPResponse{
 		Code:    http.StatusOK,
 		Message: "Success",
@@ -428,34 +235,153 @@ func UpdatePipelineRun(c *gin.Context) {
 // @Router      /api/pipeline-runs/{id} [delete]
 // @Tags        PipelineRun
 func DeletePipelineRun(c *gin.Context) {
-	id := c.Param("id")
+	log.Info().Msg("DeletePipelineRun initiated")
 
+	id := c.Param("id")
 	pipelineRun, err := persistence.PipelineRunRepo.Get(id)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Str("id", id).Msg("Error fetching pipeline run in DeletePipelineRun")
 		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
 			Code:    http.StatusNotFound,
 			Message: "Pipeline run is not found",
 		})
-
 		return
 	}
 
-	err = persistence.PipelineRunRepo.Delete(pipelineRun)
+	err = pipeline_run_services.DeletePipelineRun(strconv.FormatUint(pipelineRun.ID, 10))
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Str("id", id).Msg("Error deleting pipeline run in DeletePipelineRun")
 		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
 			Code:    http.StatusNotFound,
-			Message: "Pipeline run is not found",
+			Message: err.Error(),
 		})
-
 		return
 	}
 
+	log.Info().Str("id", id).Msg("Pipeline run deleted successfully in DeletePipelineRun")
 	c.JSON(http.StatusOK, http_res.HTTPResponse{
 		Code:    http.StatusOK,
 		Message: "Success",
+	})
+}
+
+type evaluateRequest struct {
+	ProjectID    uint64 `json:"project_id" form:"project_id"`
+	RunID        uint64 `json:"run_id" form:"run_id"`
+	FinalRequest bool   `json:"final_request" form:"final_request"`
+}
+
+// EvaluatePipelineRun godoc
+// @Summary     Evaluate pipeline run by ID
+// @Description Evaluate pipeline run by ID
+// @Produce     json
+// @Param       project_id    query    int  true "Project ID"
+// @Param       run_id        query    int  true "Run ID from CI/CD pipeline"
+// @Param       final_request query    bool true "Final Evaluation Request?"
+// @Success     200 {object} http_res.HTTPResponse
+// @Router      /api/pipeline-runs/evaluate [get]
+// @Tags        PipelineRun
+func EvaluatePipelineRun(c *gin.Context) {
+	log.Info().Msg("EvaluatePipelineRun initiated")
+
+	query := evaluateRequest{}
+	err := c.ShouldBindQuery(&query)
+	if err != nil {
+		log.Error().Err(err).Msg("Error binding query parameters in EvaluatePipelineRun")
+		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid query parameters",
+		})
+		return
+	}
+
+	log.Info().Interface("query", query).Msg("Query parameters received in EvaluatePipelineRun")
+
+	type Evaluate struct {
+		Evaluate       bool   `json:"evaluate" form:"evaluate"`
+		ThresholdScore uint64 `json:"threshold_score" form:"threshold_score"`
+		Score          uint64 `json:"score" form:"score"`
+	}
+
+	// Get pipeline run
+	pipelineRuns, _, err := pipeline_run_services.GetPipelineRuns(pipeline_runs_models.PipelineRun{
+		RunID:     query.RunID,
+		ProjectID: query.ProjectID,
+	}, "1", "100")
+
+	if err != nil {
+		log.Error().Err(err).Msg("Error querying pipeline runs in EvaluatePipelineRun")
+		c.JSON(http.StatusInternalServerError, http_res.HTTPResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Unable to get pipeline_run",
+		})
+		return
+	}
+
+	if len(pipelineRuns) == 0 {
+		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
+			Code:    http.StatusNotFound,
+			Message: "Pipeline run not found",
+		})
+		return
+	}
+
+	pipelineRun := pipelineRuns[0]
+
+	project, err := persistence.ProjectRepo.Get(strconv.Itoa(int(pipelineRun.ProjectID)))
+	if err != nil {
+		log.Error().Err(err).Msg("Error fetching project in EvaluatePipelineRun")
+		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
+			Code:    http.StatusNotFound,
+			Message: "Project not found",
+		})
+		return
+	}
+
+	pipelineEvaluation, err := persistence.PipelineEvaluationRepo.Get(strconv.Itoa(int(project.PipelineEvaluationID)))
+	if err != nil {
+		log.Error().Err(err).Msg("Error fetching pipeline evaluation in EvaluatePipelineRun")
+		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
+			Code:    http.StatusNotFound,
+			Message: "Pipeline evaluation not found",
+		})
+		return
+	}
+
+	counts := make(map[int]int)
+	severities := []int{1, 2, 3, 4, 5}
+	for _, severity := range severities {
+		count, err := persistence.FindingRepo.CountByPipelineRunIDAndSeverity(pipelineRun.ID, uint64(severity))
+		if err != nil {
+			log.Error().Err(err).Int("severity", severity).Msg("Error counting findings in EvaluatePipelineRun")
+			c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
+				Code:    http.StatusBadRequest,
+				Message: "Findings not found",
+			})
+			return
+		}
+		counts[severity] = count
+	}
+
+	score := counts[2]*int(pipelineEvaluation.SeverityLowScore) +
+		counts[3]*int(pipelineEvaluation.SeverityMediumScore) +
+		counts[4]*int(pipelineEvaluation.SeverityHighScore) +
+		counts[5]*int(pipelineEvaluation.SeverityCriticalScore)
+
+	evaluation := score <= int(pipelineEvaluation.ThresholdScore)
+
+	if query.FinalRequest {
+		// TODO: Handle final request logic
+	}
+
+	log.Info().Bool("evaluation", evaluation).Int("score", score).Msg("Pipeline run evaluated successfully in EvaluatePipelineRun")
+	c.JSON(http.StatusOK, http_res.HTTPResponse{
+		Code:    http.StatusOK,
+		Message: "Success",
+		Data: Evaluate{
+			Evaluate:       evaluation,
+			ThresholdScore: pipelineEvaluation.ThresholdScore,
+			Score:          uint64(score),
+		},
 	})
 }

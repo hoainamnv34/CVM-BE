@@ -7,6 +7,7 @@ import (
 
 type PipelineRunRepository struct{}
 
+
 var PipelineRunRepo *PipelineRunRepository = &PipelineRunRepository{}
 
 func (r *PipelineRunRepository) Get(id string) (*models.PipelineRun, error) {

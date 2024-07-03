@@ -164,9 +164,9 @@ func (c *SonarQubeClient) ImportHotspots(projectKey string) ([]models.Finding, e
 
 		// Create Finding object and append to items
 		find := models.Finding{
-			Title:           title,
-			CWE:             cwe,
-			RiskDescription: description,
+			Title:       title,
+			CWE:         cwe,
+			Description: description,
 			// TestID:          testID,
 			Severity: severity,
 			// References:         references,
@@ -175,7 +175,7 @@ func (c *SonarQubeClient) ImportHotspots(projectKey string) ([]models.Finding, e
 			Active:           true,
 			Duplicate:        false,
 			StaticFinding:    true,
-			UniqueIDFromTool: fmt.Sprintf("hotspot:%s", hotspot.Key),
+			// UniqueIDFromTool: fmt.Sprintf("hotspot:%s", hotspot.Key),
 		}
 		items = append(items, find)
 	}
@@ -238,16 +238,15 @@ func (c *SonarQubeClient) ImportIssues(projectKey string) ([]models.Finding, err
 		find := models.Finding{
 			Title:            title,
 			CWE:              cwe,
-			RiskDescription:  description,
+			Description:      description,
 			Severity:         severity,
 			Reference:        references,
 			FilePath:         componentKey,
 			Line:             line,
 			Duplicate:        false,
 			Mitigation:       "nil",
-			Impact:           "No impact provided",
 			StaticFinding:    true,
-			UniqueIDFromTool: issue.Key,
+			// UniqueIDFromTool: issue.Key,
 		}
 		items = append(items, find)
 	}

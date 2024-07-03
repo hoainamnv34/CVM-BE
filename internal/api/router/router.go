@@ -41,18 +41,10 @@ func Setup() *gin.Engine {
 	app.NoRoute(middlewares.NoRouteHandler())
 
 	// Routes
-	// ================== Login Routes
-	app.POST("/api/login", controllers.Login)
 
 	// ================== Docs Routes
 	app.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// ================== Users routes
-	app.POST("/api/users", controllers.CreateUser)
-	app.GET("/api/users/:id", controllers.GetUserByID)
-	app.GET("/api/users", controllers.GetUsers)
-	app.PUT("/api/users/:id", controllers.UpdateUser)
-	app.DELETE("/api/users/:id", controllers.DeleteUser)
 
 	// ================== Project groups routes
 	app.POST("/api/project-groups", controllers.CreateProjectGroup)

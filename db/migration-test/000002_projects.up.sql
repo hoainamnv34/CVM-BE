@@ -8,3 +8,5 @@ CREATE TABLE "projects" (
   "updated_at" TIMESTAMPTZ DEFAULT NOW(),
   "created_at" TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE "projects" ADD FOREIGN KEY ("project_group_id") REFERENCES "project_groups" ("id");

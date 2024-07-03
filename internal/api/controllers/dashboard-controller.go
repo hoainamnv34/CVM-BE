@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 	"strconv"
-	findingservice "vulnerability-management/internal/api/services/findings"
+	finding_service "vulnerability-management/internal/api/services/finding"
 	models "vulnerability-management/internal/pkg/models/findings"
 	http_res "vulnerability-management/pkg/http-res"
 
@@ -29,7 +29,7 @@ type responseBody struct {
 func GetFindingsByProjectID(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
-	openedCount, err := findingservice.CountFindings(models.Finding{
+	openedCount, err := finding_service.CountFindings(models.Finding{
 		ProjectID: id,
 		Active:    true,
 	})
@@ -45,7 +45,7 @@ func GetFindingsByProjectID(c *gin.Context) {
 		return
 	}
 
-	closedCount, err := findingservice.CountFindings(models.Finding{
+	closedCount, err := finding_service.CountFindings(models.Finding{
 		ProjectID: id,
 		Active:    false,
 	})
@@ -61,7 +61,7 @@ func GetFindingsByProjectID(c *gin.Context) {
 		return
 	}
 
-	riskAcceptedCount, err := findingservice.CountFindings(models.Finding{
+	riskAcceptedCount, err := finding_service.CountFindings(models.Finding{
 		ProjectID:    id,
 		RiskAccepted: true,
 	})

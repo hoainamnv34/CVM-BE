@@ -1,5 +1,110 @@
 basePath: /
 definitions:
+  controllers.FindingRequest:
+    properties:
+      active:
+        type: boolean
+      cwe:
+        type: integer
+      description:
+        type: string
+      duplicate:
+        type: boolean
+      dynamic_finding:
+        type: boolean
+      file_path:
+        type: string
+      line:
+        type: integer
+      mitigation:
+        type: string
+      project_id:
+        type: integer
+      reference:
+        type: string
+      risk_accepted:
+        type: boolean
+      severity:
+        type: integer
+      static_finding:
+        type: boolean
+      title:
+        type: string
+      vuln_id_from_tool:
+        type: string
+    required:
+    - project_id
+    - severity
+    - title
+    type: object
+  controllers.PipelineRunRequest:
+    properties:
+      branch_name:
+        type: string
+      commit_hash:
+        type: string
+      project_id:
+        type: integer
+      run_id:
+        type: integer
+      run_url:
+        type: string
+      status:
+        type: integer
+    required:
+    - branch_name
+    - commit_hash
+    - project_id
+    - run_id
+    - status
+    type: object
+  controllers.ProjectGroupRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  controllers.ProjectRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      pipeline_evaluation_id:
+        type: integer
+      project_group_id:
+        type: integer
+      repository_url:
+        type: string
+    required:
+    - name
+    - project_group_id
+    type: object
+  controllers.TestRequest:
+    properties:
+      name:
+        type: string
+      pipeline_run_id:
+        type: integer
+      tool_type_id:
+        type: integer
+    required:
+    - name
+    - pipeline_run_id
+    - tool_type_id
+    type: object
+  controllers.ToolTypeRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
   http_err.HTTPError:
     properties:
       code:
@@ -19,49 +124,6 @@ definitions:
       message:
         type: string
     type: object
-  users.Finding:
-    properties:
-      active:
-        type: boolean
-      created_at:
-        type: string
-      cwe:
-        type: integer
-      duplicate:
-        type: boolean
-      dynamic_finding:
-        type: boolean
-      file_path:
-        type: string
-      id:
-        type: integer
-      impact:
-        type: string
-      line:
-        type: integer
-      mitigation:
-        type: string
-      project_id:
-        type: integer
-      reference:
-        type: string
-      risk_accepted:
-        type: boolean
-      risk_description:
-        type: string
-      severity:
-        type: integer
-      static_finding:
-        type: boolean
-      title:
-        type: string
-      unique_id_from_tool:
-        type: string
-      updated_at:
-        type: string
-      vuln_id_from_tool:
-        type: string
-    type: object
   users.PipelineEvaluation:
     properties:
       created_at:
@@ -79,108 +141,6 @@ definitions:
       threshold_score:
         type: integer
       updated_at:
-        type: string
-    type: object
-  users.PipelineRun:
-    properties:
-      branch_name:
-        type: string
-      commit_hash:
-        type: string
-      created_at:
-        type: string
-      id:
-        type: integer
-      pipeline_run_id:
-        type: integer
-      pipeline_run_url:
-        type: string
-      project_id:
-        type: integer
-      status:
-        type: integer
-      updated_at:
-        type: string
-    type: object
-  users.Project:
-    properties:
-      created_at:
-        type: string
-      description:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-      pipeline_evaluation_id:
-        type: integer
-      project_group_id:
-        type: integer
-      repository_url:
-        type: string
-      updated_at:
-        type: string
-    type: object
-  users.ProjectGroup:
-    properties:
-      created_at:
-        type: string
-      description:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-      updated_at:
-        type: string
-    type: object
-  users.Test:
-    properties:
-      created_at:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-      pipeline_run_id:
-        type: integer
-      tool_type_id:
-        type: integer
-      updated_at:
-        type: string
-    type: object
-  users.ToolType:
-    properties:
-      api_key:
-        type: string
-      created_at:
-        type: string
-      description:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-      updated_at:
-        type: string
-      url:
-        type: string
-    type: object
-  users.User:
-    properties:
-      created_at:
-        type: string
-      email:
-        type: string
-      full_name:
-        type: string
-      id:
-        type: integer
-      password:
-        type: string
-      updated_at:
-        type: string
-      username:
         type: string
     type: object
 info:
@@ -227,9 +187,9 @@ paths:
         in: query
         name: title
         type: string
-      - description: risk_description
+      - description: description
         in: query
-        name: risk_description
+        name: description
         type: string
       - description: severity
         in: query
@@ -251,17 +211,9 @@ paths:
         in: query
         name: vuln_id_from_tool
         type: string
-      - description: unique_id_from_tool
-        in: query
-        name: unique_id_from_tool
-        type: string
       - description: mitigation
         in: query
         name: mitigation
-        type: string
-      - description: impact
-        in: query
-        name: impact
         type: string
       - description: reference
         in: query
@@ -312,12 +264,12 @@ paths:
       - application/json
       description: Create finding
       parameters:
-      - description: body
+      - description: Body
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/users.Finding'
+          $ref: '#/definitions/controllers.FindingRequest'
       produces:
       - application/json
       responses:
@@ -334,7 +286,7 @@ paths:
       - application/json
       description: Delete finding by ID
       parameters:
-      - description: id
+      - description: ID
         in: path
         name: id
         required: true
@@ -352,7 +304,7 @@ paths:
     get:
       description: Get finding by ID
       parameters:
-      - description: id
+      - description: ID
         in: path
         name: id
         required: true
@@ -364,8 +316,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
       summary: Get finding by ID
       tags:
       - Finding
@@ -374,17 +324,17 @@ paths:
       - application/json
       description: Update finding by ID
       parameters:
-      - description: id
+      - description: ID
         in: path
         name: id
         required: true
         type: integer
-      - description: body
+      - description: Body
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/users.Finding'
+          $ref: '#/definitions/controllers.FindingRequest'
       produces:
       - application/json
       responses:
@@ -399,75 +349,63 @@ paths:
     get:
       description: Count findings by query
       parameters:
-      - description: project_id
+      - description: Project ID
         in: query
         name: project_id
         type: integer
-      - description: title
+      - description: Title
         in: query
         name: title
         type: string
-      - description: risk_description
-        in: query
-        name: risk_description
-        type: string
-      - description: severity
+      - description: Severity
         in: query
         name: severity
         type: integer
-      - description: cwe
+      - description: CWE
         in: query
         name: cwe
         type: integer
-      - description: line
+      - description: Line
         in: query
         name: line
         type: integer
-      - description: file_path
+      - description: File Path
         in: query
         name: file_path
         type: string
-      - description: vuln_id_from_tool
+      - description: Vuln ID from Tool
         in: query
         name: vuln_id_from_tool
         type: string
-      - description: unique_id_from_tool
-        in: query
-        name: unique_id_from_tool
-        type: string
-      - description: mitigation
+      - description: Mitigation
         in: query
         name: mitigation
         type: string
-      - description: impact
-        in: query
-        name: impact
-        type: string
-      - description: reference
+      - description: Reference
         in: query
         name: reference
         type: string
-      - description: reviewer
+      - description: Reviewer
         in: query
         name: reviewer
         type: integer
-      - description: active
+      - description: Active
         in: query
         name: active
         type: boolean
-      - description: dynamic_finding
+      - description: Dynamic Finding
         in: query
         name: dynamic_finding
         type: boolean
-      - description: duplicate
+      - description: Duplicate
         in: query
         name: duplicate
         type: boolean
-      - description: risk_accepted
+      - description: Risk Accepted
         in: query
         name: risk_accepted
         type: boolean
-      - description: static_finding
+      - description: Static Finding
         in: query
         name: static_finding
         type: boolean
@@ -487,19 +425,19 @@ paths:
     get:
       description: Get findings by query parent
       parameters:
-      - description: parent_id
+      - description: Parent ID
         in: query
         name: parent_id
         type: integer
-      - description: parent_type
+      - description: Parent Type
         in: query
         name: parent_type
         type: integer
-      - description: page
+      - description: Page
         in: query
         name: page
         type: integer
-      - description: size
+      - description: Size
         in: query
         name: size
         type: integer
@@ -519,11 +457,11 @@ paths:
     get:
       description: Count findings by query parent
       parameters:
-      - description: parent_id
+      - description: Parent ID
         in: query
         name: parent_id
         type: integer
-      - description: parent_type
+      - description: Parent Type
         in: query
         name: parent_type
         type: integer
@@ -550,14 +488,14 @@ paths:
         name: project_id
         required: true
         type: string
-      - description: Pipeline run ID from Repo
+      - description: Run ID from CI/CD pipeline
         in: query
-        name: pipeline_run_id
+        name: run_id
         required: true
         type: string
-      - description: Pipeline run URL from Repo
+      - description: Run URL from CI/CD pipeline
         in: query
-        name: pipeline_run_url
+        name: run_url
         type: string
       - description: Commit hash
         in: query
@@ -605,31 +543,31 @@ paths:
     get:
       description: Get pipeline evaluations by query
       parameters:
-      - description: severity_critical_score
+      - description: Severity Critical Score
         in: query
         name: severity_critical_score
         type: integer
-      - description: severity_high_score
+      - description: Severity High Score
         in: query
         name: severity_high_score
         type: integer
-      - description: severity_medium_score
+      - description: Severity Medium Score
         in: query
         name: severity_medium_score
         type: integer
-      - description: severity_low_score
+      - description: Severity Low Score
         in: query
         name: severity_low_score
         type: integer
-      - description: threshold_score
+      - description: Threshold Score
         in: query
         name: threshold_score
         type: integer
-      - description: page
+      - description: Page
         in: query
         name: page
         type: integer
-      - description: size
+      - description: Size
         in: query
         name: size
         type: integer
@@ -640,8 +578,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
       summary: Get pipeline evaluations by query
       tags:
       - PipelineEvaluation
@@ -672,7 +608,7 @@ paths:
       - application/json
       description: Delete pipeline evaluation by ID
       parameters:
-      - description: id
+      - description: ID
         in: path
         name: id
         required: true
@@ -690,7 +626,7 @@ paths:
     get:
       description: Get pipeline evaluation by ID
       parameters:
-      - description: id
+      - description: ID
         in: path
         name: id
         required: true
@@ -702,8 +638,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
       summary: Get pipeline evaluation by ID
       tags:
       - PipelineEvaluation
@@ -712,7 +646,7 @@ paths:
       - application/json
       description: Update pipeline evaluation by ID
       parameters:
-      - description: id
+      - description: ID
         in: path
         name: id
         required: true
@@ -737,23 +671,23 @@ paths:
     get:
       description: Count pipeline evaluations by query
       parameters:
-      - description: severity_critical_score
+      - description: Severity Critical Score
         in: query
         name: severity_critical_score
         type: integer
-      - description: severity_high_score
+      - description: Severity High Score
         in: query
         name: severity_high_score
         type: integer
-      - description: severity_medium_score
+      - description: Severity Medium Score
         in: query
         name: severity_medium_score
         type: integer
-      - description: severity_low_score
+      - description: Severity Low Score
         in: query
         name: severity_low_score
         type: integer
-      - description: threshold_score
+      - description: Threshold Score
         in: query
         name: threshold_score
         type: integer
@@ -764,8 +698,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
       summary: Count pipeline evaluations by query
       tags:
       - PipelineEvaluation
@@ -789,13 +721,13 @@ paths:
         in: query
         name: project_id
         type: integer
-      - description: pipeline_run_url
+      - description: run_url
         in: query
-        name: pipeline_run_url
+        name: run_url
         type: string
-      - description: pipeline_run_id
+      - description: run_id
         in: query
-        name: pipeline_run_id
+        name: run_id
         type: integer
       - description: page
         in: query
@@ -812,8 +744,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
       summary: Get pipeline runs by query
       tags:
       - PipelineRun
@@ -822,12 +752,12 @@ paths:
       - application/json
       description: Create pipeline run
       parameters:
-      - description: body
+      - description: Body
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/users.PipelineRun'
+          $ref: '#/definitions/controllers.PipelineRunRequest'
       produces:
       - application/json
       responses:
@@ -874,8 +804,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
       summary: Get pipeline run by ID
       tags:
       - PipelineRun
@@ -884,17 +812,17 @@ paths:
       - application/json
       description: Update pipeline run by ID
       parameters:
-      - description: id
+      - description: ID
         in: path
         name: id
         required: true
         type: integer
-      - description: body
+      - description: Body
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/users.PipelineRun'
+          $ref: '#/definitions/controllers.PipelineRunRequest'
       produces:
       - application/json
       responses:
@@ -914,14 +842,14 @@ paths:
         name: project_id
         required: true
         type: integer
-      - description: Pipeline run ID from Repo
+      - description: Run ID from CI/CD pipeline
         in: query
-        name: pipeline_run_id
+        name: run_id
         required: true
         type: integer
-      - description: Latest Evaluation Request ?
+      - description: Final Evaluation Request?
         in: query
-        name: latest_request
+        name: final_request
         required: true
         type: boolean
       produces:
@@ -931,8 +859,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
       summary: Evaluate pipeline run by ID
       tags:
       - PipelineRun
@@ -967,8 +893,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
       summary: Get project group by query
       tags:
       - ProjectGroup
@@ -982,7 +906,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/users.ProjectGroup'
+          $ref: '#/definitions/controllers.ProjectGroupRequest'
       produces:
       - application/json
       responses:
@@ -1029,8 +953,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
       summary: Get project group by ID
       tags:
       - ProjectGroup
@@ -1044,12 +966,12 @@ paths:
         name: id
         required: true
         type: integer
-      - description: body
+      - description: Body
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/users.ProjectGroup'
+          $ref: '#/definitions/controllers.ProjectGroupRequest'
       produces:
       - application/json
       responses:
@@ -1099,8 +1021,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
       summary: Get projects by query
       tags:
       - Project
@@ -1114,7 +1034,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/users.Project'
+          $ref: '#/definitions/controllers.ProjectRequest'
       produces:
       - application/json
       responses:
@@ -1161,8 +1081,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
       summary: Get project by ID
       tags:
       - Project
@@ -1171,17 +1089,17 @@ paths:
       - application/json
       description: Update project by ID
       parameters:
-      - description: id
+      - description: ID
         in: path
         name: id
         required: true
         type: integer
-      - description: body
+      - description: Body
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/users.Project'
+          $ref: '#/definitions/controllers.ProjectRequest'
       produces:
       - application/json
       responses:
@@ -1196,23 +1114,23 @@ paths:
     get:
       description: Get tests by query
       parameters:
-      - description: name
+      - description: Name
         in: query
         name: name
         type: string
-      - description: pipeline_run_id
+      - description: Pipeline Run ID
         in: query
         name: pipeline_run_id
         type: integer
-      - description: tool_type_id
+      - description: Tool Type ID
         in: query
         name: tool_type_id
         type: integer
-      - description: page
+      - description: Page
         in: query
         name: page
         type: integer
-      - description: size
+      - description: Size
         in: query
         name: size
         type: integer
@@ -1233,12 +1151,12 @@ paths:
       - application/json
       description: Create test
       parameters:
-      - description: body
+      - description: Body
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/users.Test'
+          $ref: '#/definitions/controllers.TestRequest'
       produces:
       - application/json
       responses:
@@ -1255,7 +1173,7 @@ paths:
       - application/json
       description: Delete test by ID
       parameters:
-      - description: id
+      - description: ID
         in: path
         name: id
         required: true
@@ -1273,7 +1191,7 @@ paths:
     get:
       description: Get test by ID
       parameters:
-      - description: id
+      - description: ID
         in: path
         name: id
         required: true
@@ -1295,17 +1213,17 @@ paths:
       - application/json
       description: Update test by ID
       parameters:
-      - description: id
+      - description: ID
         in: path
         name: id
         required: true
         type: integer
-      - description: body
+      - description: Body
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/users.Test'
+          $ref: '#/definitions/controllers.TestRequest'
       produces:
       - application/json
       responses:
@@ -1320,27 +1238,19 @@ paths:
     get:
       description: Get tool types by query
       parameters:
-      - description: name
+      - description: Name
         in: query
         name: name
         type: string
-      - description: description
+      - description: Description
         in: query
         name: description
         type: string
-      - description: url
-        in: query
-        name: url
-        type: string
-      - description: api_key
-        in: query
-        name: api_key
-        type: string
-      - description: page
+      - description: Page
         in: query
         name: page
         type: integer
-      - description: size
+      - description: Size
         in: query
         name: size
         type: integer
@@ -1351,8 +1261,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
       summary: Get tool types by query
       tags:
       - ToolType
@@ -1361,12 +1269,12 @@ paths:
       - application/json
       description: Create tool type
       parameters:
-      - description: body
+      - description: Body
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/users.ToolType'
+          $ref: '#/definitions/controllers.ToolTypeRequest'
       produces:
       - application/json
       responses:
@@ -1383,7 +1291,7 @@ paths:
       - application/json
       description: Delete tool type by ID
       parameters:
-      - description: id
+      - description: ID
         in: path
         name: id
         required: true
@@ -1399,41 +1307,48 @@ paths:
       tags:
       - ToolType
     get:
-      description: Get tool type by ID
+      description: |-
+        Get tool type by ID
+        Get tool type by ID
       parameters:
       - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ID
         in: path
         name: id
         required: true
         type: integer
       produces:
       - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
       summary: Get tool type by ID
       tags:
+      - ToolType
       - ToolType
     put:
       consumes:
       - application/json
       description: Update tool type by ID
       parameters:
-      - description: id
+      - description: ID
         in: path
         name: id
         required: true
         type: integer
-      - description: body
+      - description: Body
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/users.ToolType'
+          $ref: '#/definitions/controllers.ToolTypeRequest'
       produces:
       - application/json
       responses:
@@ -1444,130 +1359,6 @@ paths:
       summary: Update tool type by ID
       tags:
       - ToolType
-  /api/users:
-    get:
-      description: Get users by query
-      parameters:
-      - description: name
-        in: query
-        name: name
-        type: string
-      - description: pipeline_run_id
-        in: query
-        name: pipeline_run_id
-        type: integer
-      - description: tool_type_id
-        in: query
-        name: tool_type_id
-        type: integer
-      - description: page
-        in: query
-        name: page
-        type: integer
-      - description: size
-        in: query
-        name: size
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
-      summary: Get users by query
-      tags:
-      - User
-    post:
-      consumes:
-      - application/json
-      description: Create user
-      parameters:
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/users.User'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/http_res.HTTPResponse'
-      summary: Create user
-      tags:
-      - User
-  /api/users/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete user by ID
-      parameters:
-      - description: id
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/http_res.HTTPResponse'
-      summary: Delete user by ID
-      tags:
-      - User
-    get:
-      description: Get user by ID
-      parameters:
-      - description: id
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
-      summary: Get user by ID
-      tags:
-      - User
-    put:
-      consumes:
-      - application/json
-      description: Update user by ID
-      parameters:
-      - description: id
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/users.User'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/http_res.HTTPResponse'
-      summary: Update user by ID
-      tags:
-      - User
 securityDefinitions:
   ApiKeyAuth:
     in: header

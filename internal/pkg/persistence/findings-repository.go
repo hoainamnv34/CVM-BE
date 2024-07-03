@@ -7,6 +7,7 @@ import (
 
 type FindingRepository struct{}
 
+
 var FindingRepo *FindingRepository = &FindingRepository{}
 
 func (r *FindingRepository) Get(id string) (*models.Finding, error) {
@@ -71,14 +72,6 @@ func (r *FindingRepository) QueryByProjectGroupID(projectGroupID uint64, offset 
 
 	count := 0
 
-	// query := db.DB.Table("findings").
-	// 	Select("findings.*").
-	// 	Joins("JOIN tests ON findings.test_id = tests.id").
-	// 	Joins("JOIN pipeline_runs ON tests.pipeline_run_id = pipeline_runs.id").
-	// 	Joins("JOIN cicd_pipelines ON pipeline_runs.cicd_pipeline_id = cicd_pipelines.id").
-	// 	Joins("JOIN projects ON cicd_pipelines.project_id = projects.id").
-	// 	Joins("JOIN project_groups ON projects.project_group_id = project_groups.id").
-	// 	Where("project_groups.id = ?", projectGroupID)
 
 	query := db.DB.Table("findings").
 		Select("findings.*").

@@ -16,12 +16,10 @@ type Test struct {
 func (m *Test) BeforeCreate() error {
 	m.CreatedAt = time.Now()
 	m.UpdatedAt = time.Now()
-
 	return nil
 }
 
 func (m *Test) BeforeUpdate() error {
 	m.UpdatedAt = time.Now()
-
 	return nil
 }

@@ -1,7 +1,7 @@
 package evaluatepipeline
 
 import (
-	pipelineruns "vulnerability-management/internal/api/services/pipeline-runs"
+	pipelineruns "vulnerability-management/internal/api/services/pipeline-run"
 	models "vulnerability-management/internal/pkg/models/pipeline-runs"
 )
 

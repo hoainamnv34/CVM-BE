@@ -7,6 +7,7 @@ import (
 
 type FindingTestRepository struct{}
 
+
 var FindingTestRepo *FindingTestRepository = &FindingTestRepository{}
 
 func (r *FindingTestRepository) Get(id string) (*models.FindingTest, error) {

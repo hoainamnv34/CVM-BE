@@ -148,15 +148,15 @@ func getItem(vuln map[string]interface{}, checkType string) *models.Finding {
 	}
 
 	return &models.Finding{
-		Title:           title,
-		RiskDescription: description,
-		Severity:        mapSeverity(severity),
-		Mitigation:      mitigation,
-		Reference:       references,
-		FilePath:        filePath,
-		Line:            uint64(sourceLine),
-		StaticFinding:   true,
-		DynamicFinding:  false,
+		Title:          title,
+		Description:    description,
+		Severity:       mapSeverity(severity),
+		Mitigation:     mitigation,
+		Reference:      references,
+		FilePath:       filePath,
+		Line:           uint64(sourceLine),
+		StaticFinding:  true,
+		DynamicFinding: false,
 	}
 }
 

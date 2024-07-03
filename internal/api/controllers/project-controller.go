@@ -2,9 +2,12 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
+	project_services "vulnerability-management/internal/api/services/project"
 	models "vulnerability-management/internal/pkg/models/projects"
 	persistence "vulnerability-management/internal/pkg/persistence"
+
 	helpers "vulnerability-management/pkg/helpers"
 	http_res "vulnerability-management/pkg/http-res"
 
@@ -19,23 +22,24 @@ import (
 // @Param       id  path     integer true "id" min(1)
 // @Success     200 {object} http_res.HTTPResponse
 // @Router      /api/projects/{id} [get]
-// @Security    Authorization Token
 // @Tags        Project
 func GetProjectByID(c *gin.Context) {
+	log.Info().Msg("GetProjectByID initiated")
+
 	id := c.Param("id")
 
 	project, err := persistence.ProjectRepo.Get(id)
 	if err != nil {
-		log.Error().Msgf(err.Error())
+		log.Error().Err(err).Str("id", id).Msg("Error fetching project in GetProjectByID")
 
 		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
 			Code:    http.StatusNotFound,
 			Message: "Project is not found",
 		})
-
 		return
 	}
 
+	log.Info().Str("id", id).Msg("Project fetched successfully in GetProjectByID")
 	c.JSON(http.StatusOK, http_res.HTTPResponse{
 		Code:    http.StatusOK,
 		Message: "Success",
@@ -56,55 +60,53 @@ func GetProjectByID(c *gin.Context) {
 // @Param       size             query    integer false "size"
 // @Success     200              {object} http_res.HTTPResponse
 // @Router      /api/projects [get]
-// @Security    Authorization Token
 // @Tags        Project
 func GetProjects(c *gin.Context) {
-	query := models.Project{}
+	log.Info().Msg("GetProjects initiated")
 
+	query := models.Project{}
 	err := c.ShouldBindQuery(&query)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Msg("Error binding query parameters in GetProjects")
 		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
 			Code:    http.StatusBadRequest,
 			Message: "Invalid query parameters",
 		})
-
 		return
 	}
 
 	where := map[string]interface{}{}
-
 	if query.Name != "" {
 		where["name"] = query.Name
 	}
-
 	if query.Description != "" {
 		where["description"] = query.Description
 	}
-
 	if query.ProjectGroupID != 0 {
 		where["project_group_id"] = query.ProjectGroupID
 	}
-
 	if query.RepositoryURL != "" {
 		where["repository_url"] = query.RepositoryURL
 	}
 
 	offset, limit := helpers.GetPagination(c.Query("page"), c.Query("size"))
+	log.Info().
+		Interface("where", where).
+		Int("offset", offset).
+		Int("limit", limit).
+		Msg("Query parameters for GetProjects")
 
 	projects, count, err := persistence.ProjectRepo.Query(where, offset, limit)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Msg("Error querying projects in GetProjects")
 		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
 			Code:    http.StatusNotFound,
 			Message: "Projects not found",
 		})
-
 		return
 	}
 
+	log.Info().Int("count", count).Msg("Projects fetched successfully in GetProjects")
 	c.JSON(http.StatusOK, http_res.HTTPResponse{
 		Code:      http.StatusOK,
 		Message:   "Success",
@@ -113,26 +115,35 @@ func GetProjects(c *gin.Context) {
 	})
 }
 
+// ProjectRequest represents the payload for creating a project.
+type ProjectRequest struct {
+	Name                 string `json:"name" binding:"required"`
+	Description          string `json:"description"`
+	ProjectGroupID       uint64 `json:"project_group_id" binding:"required"`
+	RepositoryURL        string `json:"repository_url"`
+	PipelineEvaluationID uint64 `json:"pipeline_evaluation_id"`
+}
+
 // CreateProject godoc
 // @Summary     Create project
 // @Description Create project
 // @Accept      json
 // @Produce     json
-// @Param       body body     models.Project true "body"
+// @Param       body body     ProjectRequest true "body"
 // @Success     201  {object} http_res.HTTPResponse
 // @Router      /api/projects [post]
 // @Tags        Project
 func CreateProject(c *gin.Context) {
-	body := models.Project{}
+	log.Info().Msg("CreateProject initiated")
+
+	var body ProjectRequest
 	err := c.BindJSON(&body)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Msg("Error binding JSON in CreateProject")
 		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
 			Code:    http.StatusBadRequest,
 			Message: "Invalid body parameters",
 		})
-
 		return
 	}
 
@@ -146,16 +157,15 @@ func CreateProject(c *gin.Context) {
 
 	res, err := persistence.ProjectRepo.Add(&project)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Msg("Error adding project in CreateProject")
 		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
 			Code:    http.StatusBadRequest,
 			Message: "Bad request",
 		})
-
 		return
 	}
 
+	log.Info().Msg("Project created successfully in CreateProject")
 	c.JSON(http.StatusCreated, http_res.HTTPResponse{
 		Code:    http.StatusCreated,
 		Message: "Success",
@@ -168,71 +178,63 @@ func CreateProject(c *gin.Context) {
 // @Description Update project by ID
 // @Accept      json
 // @Produce     json
-// @Param       id   path     integer        true "id" min(1)
-// @Param       body body     models.Project true "body"
+// @Param       id   path     integer        true "ID"
+// @Param       body body     ProjectRequest true "Body"
 // @Success     200  {object} http_res.HTTPResponse
 // @Router      /api/projects/{id} [put]
 // @Tags        Project
 func UpdateProject(c *gin.Context) {
-	body := models.Project{}
+	log.Info().Msg("UpdateProject initiated")
+
+	var body ProjectRequest
 	err := c.BindJSON(&body)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Msg("Error binding JSON in UpdateProject")
 		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
 			Code:    http.StatusBadRequest,
 			Message: "Invalid body parameters",
 		})
-
 		return
 	}
 
 	id := c.Param("id")
-
 	project, err := persistence.ProjectRepo.Get(id)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Str("id", id).Msg("Error fetching project in UpdateProject")
 		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
 			Code:    http.StatusNotFound,
 			Message: "Project is not found",
 		})
-
 		return
 	}
 
 	if body.Name != "" {
 		project.Name = body.Name
 	}
-
 	if body.Description != "" {
 		project.Description = body.Description
 	}
-
 	if body.ProjectGroupID != 0 {
 		project.ProjectGroupID = body.ProjectGroupID
 	}
-
 	if body.RepositoryURL != "" {
 		project.RepositoryURL = body.RepositoryURL
 	}
-	
 	if body.PipelineEvaluationID != 0 {
 		project.PipelineEvaluationID = body.PipelineEvaluationID
 	}
 
 	err = persistence.ProjectRepo.Update(project)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Str("id", id).Msg("Error updating project in UpdateProject")
 		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
 			Code:    http.StatusNotFound,
 			Message: "Project is not found",
 		})
-
 		return
 	}
 
+	log.Info().Str("id", id).Msg("Project updated successfully in UpdateProject")
 	c.JSON(http.StatusOK, http_res.HTTPResponse{
 		Code:    http.StatusOK,
 		Message: "Success",
@@ -249,32 +251,30 @@ func UpdateProject(c *gin.Context) {
 // @Router      /api/projects/{id} [delete]
 // @Tags        Project
 func DeleteProject(c *gin.Context) {
-	id := c.Param("id")
+	log.Info().Msg("DeleteProject initiated")
 
+	id := c.Param("id")
 	project, err := persistence.ProjectRepo.Get(id)
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Str("id", id).Msg("Error fetching project in DeleteProject")
 		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
 			Code:    http.StatusNotFound,
 			Message: "Project is not found",
 		})
-
 		return
 	}
 
-	err = persistence.ProjectRepo.Delete(project)
+	err = project_services.DeleteProject(strconv.FormatUint(project.ID, 10))
 	if err != nil {
-		log.Error().Msgf(err.Error())
-
+		log.Error().Err(err).Str("id", id).Msg("Error deleting project in DeleteProject")
 		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
 			Code:    http.StatusNotFound,
-			Message: "Project is not found",
+			Message: err.Error(),
 		})
-
 		return
 	}
 
+	log.Info().Str("id", id).Msg("Project deleted successfully in DeleteProject")
 	c.JSON(http.StatusOK, http_res.HTTPResponse{
 		Code:    http.StatusOK,
 		Message: "Success",

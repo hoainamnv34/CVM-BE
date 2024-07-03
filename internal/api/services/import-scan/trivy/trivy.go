@@ -177,7 +177,7 @@ func getItems(results []interface{}, artifactType string) []models.Finding {
 							Severity:        mapSeverity(severity),
 							FilePath:        filePath,
 							Reference:       references,
-							RiskDescription: description,
+							Description: description,
 							Mitigation:      mitigation,
 							StaticFinding:   true,
 							DynamicFinding:  false,

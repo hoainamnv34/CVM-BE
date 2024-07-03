@@ -7,6 +7,7 @@ import (
 
 type PipelineEvaluationRepository struct{}
 
+
 var PipelineEvaluationRepo *PipelineEvaluationRepository = &PipelineEvaluationRepository{}
 
 func (r *PipelineEvaluationRepository) Get(id string) (*models.PipelineEvaluation, error) {

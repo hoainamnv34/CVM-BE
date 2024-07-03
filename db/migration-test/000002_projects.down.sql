@@ -1,0 +1,3 @@
+ALTER TABLE IF EXISTS "projects" DROP CONSTRAINT IF EXISTS "project_group_id";
+
+DROP TABLE IF EXISTS "projects";

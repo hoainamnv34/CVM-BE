@@ -17,12 +17,10 @@ type Project struct {
 func (m *Project) BeforeCreate() error {
 	m.CreatedAt = time.Now()
 	m.UpdatedAt = time.Now()
-
 	return nil
 }
 
 func (m *Project) BeforeUpdate() error {
 	m.UpdatedAt = time.Now()
-
 	return nil
 }

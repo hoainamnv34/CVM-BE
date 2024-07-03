@@ -88,8 +88,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "risk_description",
-                        "name": "risk_description",
+                        "description": "description",
+                        "name": "description",
                         "in": "query"
                     },
                     {
@@ -124,20 +124,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "unique_id_from_tool",
-                        "name": "unique_id_from_tool",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
                         "description": "mitigation",
                         "name": "mitigation",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "impact",
-                        "name": "impact",
                         "in": "query"
                     },
                     {
@@ -212,12 +200,12 @@ const docTemplate = `{
                 "summary": "Create finding",
                 "parameters": [
                     {
-                        "description": "body",
+                        "description": "Body",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.Finding"
+                            "$ref": "#/definitions/controllers.FindingRequest"
                         }
                     }
                 ],
@@ -249,109 +237,91 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "project_id",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "title",
+                        "description": "Title",
                         "name": "title",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "risk_description",
-                        "name": "risk_description",
-                        "in": "query"
-                    },
-                    {
                         "type": "integer",
-                        "description": "severity",
+                        "description": "Severity",
                         "name": "severity",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "cwe",
+                        "description": "CWE",
                         "name": "cwe",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "line",
+                        "description": "Line",
                         "name": "line",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "file_path",
+                        "description": "File Path",
                         "name": "file_path",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "vuln_id_from_tool",
+                        "description": "Vuln ID from Tool",
                         "name": "vuln_id_from_tool",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "unique_id_from_tool",
-                        "name": "unique_id_from_tool",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "mitigation",
+                        "description": "Mitigation",
                         "name": "mitigation",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "impact",
-                        "name": "impact",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "reference",
+                        "description": "Reference",
                         "name": "reference",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "reviewer",
+                        "description": "Reviewer",
                         "name": "reviewer",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
-                        "description": "active",
+                        "description": "Active",
                         "name": "active",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
-                        "description": "dynamic_finding",
+                        "description": "Dynamic Finding",
                         "name": "dynamic_finding",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
-                        "description": "duplicate",
+                        "description": "Duplicate",
                         "name": "duplicate",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
-                        "description": "risk_accepted",
+                        "description": "Risk Accepted",
                         "name": "risk_accepted",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
-                        "description": "static_finding",
+                        "description": "Static Finding",
                         "name": "static_finding",
                         "in": "query"
                     }
@@ -384,25 +354,25 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "parent_id",
+                        "description": "Parent ID",
                         "name": "parent_id",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "parent_type",
+                        "description": "Parent Type",
                         "name": "parent_type",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "page",
+                        "description": "Page",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "size",
+                        "description": "Size",
                         "name": "size",
                         "in": "query"
                     }
@@ -435,13 +405,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "parent_id",
+                        "description": "Parent ID",
                         "name": "parent_id",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "parent_type",
+                        "description": "Parent Type",
                         "name": "parent_type",
                         "in": "query"
                     }
@@ -458,11 +428,6 @@ const docTemplate = `{
         },
         "/api/findings/{id}": {
             "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
                 "description": "Get finding by ID",
                 "produces": [
                     "application/json"
@@ -474,7 +439,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "id",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -504,18 +469,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "id",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "body",
+                        "description": "Body",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.Finding"
+                            "$ref": "#/definitions/controllers.FindingRequest"
                         }
                     }
                 ],
@@ -543,7 +508,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "id",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -579,15 +544,15 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Pipeline run ID from Repo",
-                        "name": "pipeline_run_id",
+                        "description": "Run ID from CI/CD pipeline",
+                        "name": "run_id",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Pipeline run URL from Repo",
-                        "name": "pipeline_run_url",
+                        "description": "Run URL from CI/CD pipeline",
+                        "name": "run_url",
                         "in": "query"
                     },
                     {
@@ -653,11 +618,6 @@ const docTemplate = `{
         },
         "/api/pipeline-evaluations": {
             "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
                 "description": "Get pipeline evaluations by query",
                 "produces": [
                     "application/json"
@@ -669,43 +629,43 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "severity_critical_score",
+                        "description": "Severity Critical Score",
                         "name": "severity_critical_score",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "severity_high_score",
+                        "description": "Severity High Score",
                         "name": "severity_high_score",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "severity_medium_score",
+                        "description": "Severity Medium Score",
                         "name": "severity_medium_score",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "severity_low_score",
+                        "description": "Severity Low Score",
                         "name": "severity_low_score",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "threshold_score",
+                        "description": "Threshold Score",
                         "name": "threshold_score",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "page",
+                        "description": "Page",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "size",
+                        "description": "Size",
                         "name": "size",
                         "in": "query"
                     }
@@ -754,11 +714,6 @@ const docTemplate = `{
         },
         "/api/pipeline-evaluations/count": {
             "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
                 "description": "Count pipeline evaluations by query",
                 "produces": [
                     "application/json"
@@ -770,31 +725,31 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "severity_critical_score",
+                        "description": "Severity Critical Score",
                         "name": "severity_critical_score",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "severity_high_score",
+                        "description": "Severity High Score",
                         "name": "severity_high_score",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "severity_medium_score",
+                        "description": "Severity Medium Score",
                         "name": "severity_medium_score",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "severity_low_score",
+                        "description": "Severity Low Score",
                         "name": "severity_low_score",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "threshold_score",
+                        "description": "Threshold Score",
                         "name": "threshold_score",
                         "in": "query"
                     }
@@ -811,11 +766,6 @@ const docTemplate = `{
         },
         "/api/pipeline-evaluations/{id}": {
             "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
                 "description": "Get pipeline evaluation by ID",
                 "produces": [
                     "application/json"
@@ -827,7 +777,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "id",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -857,7 +807,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "id",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -896,7 +846,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "id",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -914,11 +864,6 @@ const docTemplate = `{
         },
         "/api/pipeline-runs": {
             "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
                 "description": "Get pipeline runs by query",
                 "produces": [
                     "application/json"
@@ -954,14 +899,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "pipeline_run_url",
-                        "name": "pipeline_run_url",
+                        "description": "run_url",
+                        "name": "run_url",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "pipeline_run_id",
-                        "name": "pipeline_run_id",
+                        "description": "run_id",
+                        "name": "run_id",
                         "in": "query"
                     },
                     {
@@ -1000,12 +945,12 @@ const docTemplate = `{
                 "summary": "Create pipeline run",
                 "parameters": [
                     {
-                        "description": "body",
+                        "description": "Body",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.PipelineRun"
+                            "$ref": "#/definitions/controllers.PipelineRunRequest"
                         }
                     }
                 ],
@@ -1021,11 +966,6 @@ const docTemplate = `{
         },
         "/api/pipeline-runs/evaluate": {
             "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
                 "description": "Evaluate pipeline run by ID",
                 "produces": [
                     "application/json"
@@ -1044,15 +984,15 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "Pipeline run ID from Repo",
-                        "name": "pipeline_run_id",
+                        "description": "Run ID from CI/CD pipeline",
+                        "name": "run_id",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "boolean",
-                        "description": "Latest Evaluation Request ?",
-                        "name": "latest_request",
+                        "description": "Final Evaluation Request?",
+                        "name": "final_request",
                         "in": "query",
                         "required": true
                     }
@@ -1069,11 +1009,6 @@ const docTemplate = `{
         },
         "/api/pipeline-runs/{id}": {
             "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
                 "description": "Get pipeline run by ID",
                 "produces": [
                     "application/json"
@@ -1115,18 +1050,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "id",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "body",
+                        "description": "Body",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.PipelineRun"
+                            "$ref": "#/definitions/controllers.PipelineRunRequest"
                         }
                     }
                 ],
@@ -1172,11 +1107,6 @@ const docTemplate = `{
         },
         "/api/project-groups": {
             "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
                 "description": "Get project group by query",
                 "produces": [
                     "application/json"
@@ -1245,7 +1175,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.ProjectGroup"
+                            "$ref": "#/definitions/controllers.ProjectGroupRequest"
                         }
                     }
                 ],
@@ -1261,11 +1191,6 @@ const docTemplate = `{
         },
         "/api/project-groups/{id}": {
             "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
                 "description": "Get project group by ID",
                 "produces": [
                     "application/json"
@@ -1313,12 +1238,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "body",
+                        "description": "Body",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.ProjectGroup"
+                            "$ref": "#/definitions/controllers.ProjectGroupRequest"
                         }
                     }
                 ],
@@ -1364,11 +1289,6 @@ const docTemplate = `{
         },
         "/api/projects": {
             "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
                 "description": "Get projects by query",
                 "produces": [
                     "application/json"
@@ -1449,7 +1369,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.Project"
+                            "$ref": "#/definitions/controllers.ProjectRequest"
                         }
                     }
                 ],
@@ -1465,11 +1385,6 @@ const docTemplate = `{
         },
         "/api/projects/{id}": {
             "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
                 "description": "Get project by ID",
                 "produces": [
                     "application/json"
@@ -1511,18 +1426,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "id",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "body",
+                        "description": "Body",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.Project"
+                            "$ref": "#/definitions/controllers.ProjectRequest"
                         }
                     }
                 ],
@@ -1584,31 +1499,31 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "name",
+                        "description": "Name",
                         "name": "name",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "pipeline_run_id",
+                        "description": "Pipeline Run ID",
                         "name": "pipeline_run_id",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "tool_type_id",
+                        "description": "Tool Type ID",
                         "name": "tool_type_id",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "page",
+                        "description": "Page",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "size",
+                        "description": "Size",
                         "name": "size",
                         "in": "query"
                     }
@@ -1636,12 +1551,12 @@ const docTemplate = `{
                 "summary": "Create test",
                 "parameters": [
                     {
-                        "description": "body",
+                        "description": "Body",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.Test"
+                            "$ref": "#/definitions/controllers.TestRequest"
                         }
                     }
                 ],
@@ -1673,7 +1588,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "id",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1703,18 +1618,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "id",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "body",
+                        "description": "Body",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.Test"
+                            "$ref": "#/definitions/controllers.TestRequest"
                         }
                     }
                 ],
@@ -1742,7 +1657,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "id",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1760,11 +1675,6 @@ const docTemplate = `{
         },
         "/api/tool-types": {
             "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
                 "description": "Get tool types by query",
                 "produces": [
                     "application/json"
@@ -1776,37 +1686,25 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "name",
+                        "description": "Name",
                         "name": "name",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "description",
+                        "description": "Description",
                         "name": "description",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "url",
-                        "name": "url",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "api_key",
-                        "name": "api_key",
-                        "in": "query"
-                    },
-                    {
                         "type": "integer",
-                        "description": "page",
+                        "description": "Page",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "size",
+                        "description": "Size",
                         "name": "size",
                         "in": "query"
                     }
@@ -1834,12 +1732,12 @@ const docTemplate = `{
                 "summary": "Create tool type",
                 "parameters": [
                     {
-                        "description": "body",
+                        "description": "Body",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.ToolType"
+                            "$ref": "#/definitions/controllers.ToolTypeRequest"
                         }
                     }
                 ],
@@ -1855,16 +1753,13 @@ const docTemplate = `{
         },
         "/api/tool-types/{id}": {
             "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
-                "description": "Get tool type by ID",
+                "description": "Get tool type by ID\nGet tool type by ID",
                 "produces": [
+                    "application/json",
                     "application/json"
                 ],
                 "tags": [
+                    "ToolType",
                     "ToolType"
                 ],
                 "summary": "Get tool type by ID",
@@ -1872,6 +1767,13 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1901,18 +1803,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "id",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "body",
+                        "description": "Body",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.ToolType"
+                            "$ref": "#/definitions/controllers.ToolTypeRequest"
                         }
                     }
                 ],
@@ -1940,199 +1842,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/http_res.HTTPResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/users": {
-            "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
-                "description": "Get users by query",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Get users by query",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "name",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "pipeline_run_id",
-                        "name": "pipeline_run_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "tool_type_id",
-                        "name": "tool_type_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "page",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "size",
-                        "name": "size",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/http_res.HTTPResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Create user",
-                "parameters": [
-                    {
-                        "description": "body",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/users.User"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/http_res.HTTPResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/users/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
-                "description": "Get user by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Get user by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/http_res.HTTPResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update user by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Update user by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "body",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/users.User"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/http_res.HTTPResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete user by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Delete user by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "id",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -2150,6 +1860,162 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "controllers.FindingRequest": {
+            "type": "object",
+            "required": [
+                "project_id",
+                "severity",
+                "title"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "cwe": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "duplicate": {
+                    "type": "boolean"
+                },
+                "dynamic_finding": {
+                    "type": "boolean"
+                },
+                "file_path": {
+                    "type": "string"
+                },
+                "line": {
+                    "type": "integer"
+                },
+                "mitigation": {
+                    "type": "string"
+                },
+                "project_id": {
+                    "type": "integer"
+                },
+                "reference": {
+                    "type": "string"
+                },
+                "risk_accepted": {
+                    "type": "boolean"
+                },
+                "severity": {
+                    "type": "integer"
+                },
+                "static_finding": {
+                    "type": "boolean"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "vuln_id_from_tool": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.PipelineRunRequest": {
+            "type": "object",
+            "required": [
+                "branch_name",
+                "commit_hash",
+                "project_id",
+                "run_id",
+                "status"
+            ],
+            "properties": {
+                "branch_name": {
+                    "type": "string"
+                },
+                "commit_hash": {
+                    "type": "string"
+                },
+                "project_id": {
+                    "type": "integer"
+                },
+                "run_id": {
+                    "type": "integer"
+                },
+                "run_url": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "controllers.ProjectGroupRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.ProjectRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "project_group_id"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "pipeline_evaluation_id": {
+                    "type": "integer"
+                },
+                "project_group_id": {
+                    "type": "integer"
+                },
+                "repository_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.TestRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "pipeline_run_id",
+                "tool_type_id"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "pipeline_run_id": {
+                    "type": "integer"
+                },
+                "tool_type_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "controllers.ToolTypeRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "http_err.HTTPError": {
             "type": "object",
             "properties": {
@@ -2174,71 +2040,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "users.Finding": {
-            "type": "object",
-            "properties": {
-                "active": {
-                    "type": "boolean"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "cwe": {
-                    "type": "integer"
-                },
-                "duplicate": {
-                    "type": "boolean"
-                },
-                "dynamic_finding": {
-                    "type": "boolean"
-                },
-                "file_path": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "impact": {
-                    "type": "string"
-                },
-                "line": {
-                    "type": "integer"
-                },
-                "mitigation": {
-                    "type": "string"
-                },
-                "project_id": {
-                    "type": "integer"
-                },
-                "reference": {
-                    "type": "string"
-                },
-                "risk_accepted": {
-                    "type": "boolean"
-                },
-                "risk_description": {
-                    "type": "string"
-                },
-                "severity": {
-                    "type": "integer"
-                },
-                "static_finding": {
-                    "type": "boolean"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "unique_id_from_tool": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "vuln_id_from_tool": {
                     "type": "string"
                 }
             }
@@ -2268,162 +2069,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "users.PipelineRun": {
-            "type": "object",
-            "properties": {
-                "branch_name": {
-                    "type": "string"
-                },
-                "commit_hash": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "pipeline_run_id": {
-                    "type": "integer"
-                },
-                "pipeline_run_url": {
-                    "type": "string"
-                },
-                "project_id": {
-                    "type": "integer"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "users.Project": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "pipeline_evaluation_id": {
-                    "type": "integer"
-                },
-                "project_group_id": {
-                    "type": "integer"
-                },
-                "repository_url": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "users.ProjectGroup": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "users.Test": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "pipeline_run_id": {
-                    "type": "integer"
-                },
-                "tool_type_id": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "users.ToolType": {
-            "type": "object",
-            "properties": {
-                "api_key": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "url": {
-                    "type": "string"
-                }
-            }
-        },
-        "users.User": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "full_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "username": {
                     "type": "string"
                 }
             }

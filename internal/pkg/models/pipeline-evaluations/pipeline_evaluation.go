@@ -17,12 +17,10 @@ type PipelineEvaluation struct {
 func (m *PipelineEvaluation) BeforeCreate() error {
 	m.CreatedAt = time.Now()
 	m.UpdatedAt = time.Now()
-
 	return nil
 }
 
 func (m *PipelineEvaluation) BeforeUpdate() error {
 	m.UpdatedAt = time.Now()
-
 	return nil
 }

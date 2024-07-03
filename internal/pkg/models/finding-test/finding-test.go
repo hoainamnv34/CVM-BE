@@ -14,12 +14,10 @@ type FindingTest struct {
 func (m *FindingTest) BeforeCreate() error {
 	m.CreatedAt = time.Now()
 	m.UpdatedAt = time.Now()
-
 	return nil
 }
 
 func (m *FindingTest) BeforeUpdate() error {
 	m.UpdatedAt = time.Now()
-
 	return nil
 }

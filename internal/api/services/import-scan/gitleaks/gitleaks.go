@@ -118,21 +118,20 @@ func getFinding(issue map[string]interface{}, dupes map[string]models.Finding) e
 	hash := hex.EncodeToString(dupeKey.Sum(nil))
 
 	if existingFinding, ok := dupes[hash]; ok {
-		existingFinding.RiskDescription += "\n\n***\n\n" + description
+		existingFinding.Description += "\n\n***\n\n" + description
 		dupes[hash] = existingFinding
 	} else {
 		dupes[hash] = models.Finding{
-			Title: title,
-			// TestID:          testID,
-			CWE:             798,
-			RiskDescription: description,
-			Severity:        severity,
-			FilePath:        filePath,
-			Line:            line,
-			Reference:       "",
-			Active:          true,
-			DynamicFinding:  false,
-			StaticFinding:   true,
+			Title:          title,
+			CWE:            798,
+			Description:    description,
+			Severity:       severity,
+			FilePath:       filePath,
+			Line:           line,
+			Reference:      "",
+			Active:         true,
+			DynamicFinding: false,
+			StaticFinding:  true,
 		}
 	}
 

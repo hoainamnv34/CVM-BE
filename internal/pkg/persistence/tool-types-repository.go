@@ -7,6 +7,7 @@ import (
 
 type ToolTypeRepository struct{}
 
+
 var ToolTypeRepo *ToolTypeRepository = &ToolTypeRepository{}
 
 func (r *ToolTypeRepository) Get(id string) (*models.ToolType, error) {
