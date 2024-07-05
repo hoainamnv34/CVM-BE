@@ -11,6 +11,7 @@ import (
 	tooltypes "vulnerability-management/internal/api/services/tool-types"
 	pipeline_runs_models "vulnerability-management/internal/pkg/models/pipeline-runs"
 	tests_models "vulnerability-management/internal/pkg/models/tests"
+	tool_models "vulnerability-management/internal/pkg/models/tool-types"
 	persistence "vulnerability-management/internal/pkg/persistence"
 	http_err "vulnerability-management/pkg/http-err"
 	http_res "vulnerability-management/pkg/http-res"
@@ -20,13 +21,15 @@ import (
 )
 
 type importTestResultRequest struct {
-	ProJectID  uint64 `json:"project_id" form:"project_id"`
+	ProJectID  uint64 `json:"project_id" form:"project_id" binding:"required"`
 	CommitHash string `json:"commit_hash" form:"commit_hash"`
 	BranchName string `json:"branch_name" form:"branch_name"`
 	RunURL     string `json:"run_url" form:"run_url"`
-	RunID      uint64 `json:"run_id" form:"run_id"`
-	ToolName   string `json:"tool_name" form:"tool_name"`
-	Servicekey string `json:"service_key" form:"service_key"`
+	RunID      uint64 `json:"run_id" form:"run_id" binding:"required"`
+	ToolName   string `json:"tool_name" form:"tool_name" binding:"required"`
+	Url        string `json:"url" form:"url"`
+	ApiKey     string `json:"api_key" form:"api_key"`
+	ServiceKey string `json:"service_key" form:"service_key"`
 	TestTitle  string `json:"test_title" form:"test_title"`
 }
 
@@ -41,6 +44,8 @@ type importTestResultRequest struct {
 // @Param       commit_hash query    string false "Commit hash"
 // @Param       branch_name query    string false "Branch name"
 // @Param       tool_name   query    string true  "Tool name"
+// @Param       url         query    string false "url"
+// @Param       api_key     query    string false "api_key"
 // @Param       test_title  query    string true  "Test title"
 // @Param       service_key query    string false "Service key"
 // @Param       file        formData file   false "file"
@@ -65,7 +70,7 @@ func ImportTestResult(c *gin.Context) {
 	log.Info().Interface("query", query).Msg("Query parameters received in ImportTestResult")
 
 	// Get pipeline run
-	runs, _, err := pipelinerunservice.GetPipelineRuns(pipeline_runs_models.PipelineRun{
+	runs, runCount, err := pipelinerunservice.GetPipelineRuns(pipeline_runs_models.PipelineRun{
 		RunID:     query.RunID,
 		ProjectID: query.ProJectID,
 	}, "1", "100")
@@ -80,8 +85,9 @@ func ImportTestResult(c *gin.Context) {
 	}
 
 	var pipelineRun *pipeline_runs_models.PipelineRun
-	if len(runs) == 0 {
+	if runCount == 0 {
 		// Create pipeline run
+		log.Info().Msg("Create a new PipelineRun")
 		pipelineRun, err = persistence.PipelineRunRepo.Add(&pipeline_runs_models.PipelineRun{
 			ProjectID:  query.ProJectID,
 			BranchName: query.BranchName,
@@ -94,11 +100,11 @@ func ImportTestResult(c *gin.Context) {
 			log.Error().Err(err).Msg("Error adding pipeline run in ImportTestResult")
 			c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
 				Code:    http.StatusBadRequest,
-				Message: "Bad request",
+				Message: "Error create new pipeline",
 			})
 			return
 		}
-	} else if len(runs) != 1 {
+	} else if runCount != 1 {
 		log.Error().Msg("Multiple pipeline runs found in ImportTestResult")
 		c.JSON(http.StatusInternalServerError, http_err.HTTPError{
 			Code:    http.StatusInternalServerError,
@@ -107,12 +113,13 @@ func ImportTestResult(c *gin.Context) {
 		return
 	} else {
 		pipelineRun = &runs[0]
+		log.Info().Interface("PipelineRun", pipelineRun).Msg("ImportTestResult into PipelineRun")
 	}
 
 	// Get tool type
 	log.Info().Str("tool_name", query.ToolName).Msg("Fetching tool type in ImportTestResult")
 	toolTypes, err := tooltypes.GetToolType(query.ToolName, "")
-	if err != nil {
+	if err != nil || len(toolTypes) == 0 {
 		log.Error().Err(err).Msg("Error fetching tool type in ImportTestResult")
 		c.JSON(http.StatusBadRequest, http_err.HTTPError{
 			Code:    http.StatusBadRequest,
@@ -138,7 +145,7 @@ func ImportTestResult(c *gin.Context) {
 		return
 	}
 
-	// Create tool
+	// Get tool
 	factory := &importscan.Factory{}
 	tool := factory.CreateTool(query.ToolName)
 	if tool == nil {
@@ -149,6 +156,7 @@ func ImportTestResult(c *gin.Context) {
 		})
 		return
 	}
+	log.Info().Msg("Get tool" + tool.GetToolTypes())
 
 	// Retrieve the file from the request
 	dst := ""
@@ -158,7 +166,7 @@ func ImportTestResult(c *gin.Context) {
 			log.Error().Err(err).Msg("Error retrieving file in ImportTestResult")
 			c.JSON(http.StatusBadRequest, http_err.HTTPError{
 				Code:    http.StatusBadRequest,
-				Message: "Bad request",
+				Message: "Error retrieving file",
 			})
 			return
 		}
@@ -177,8 +185,15 @@ func ImportTestResult(c *gin.Context) {
 		}
 	}
 
+	toolInfo := tool_models.ToolInfo{
+		ToolName:   query.ToolName,
+		Url:        query.Url,
+		ApiKey:     query.ApiKey,
+		ServiceKey: query.ServiceKey,
+		ReportFile: dst,
+	}
 	// Parse findings
-	findings, err := tool.Parser(dst, query.Servicekey)
+	findings, err := tool.Parser(toolInfo)
 	if err != nil {
 		log.Error().Err(err).Msg("Error parsing findings in ImportTestResult")
 		c.JSON(http.StatusBadRequest, http_err.HTTPError{

@@ -1,4 +1,4 @@
-package users
+package findingtest
 
 import (
 	"time"

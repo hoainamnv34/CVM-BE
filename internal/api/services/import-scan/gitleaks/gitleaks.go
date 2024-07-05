@@ -7,15 +7,16 @@ import (
 	"fmt"
 	"os"
 	models "vulnerability-management/internal/pkg/models/findings"
+	tool_models "vulnerability-management/internal/pkg/models/tool-types"
 
 	"github.com/rs/zerolog/log"
 )
 
 type GitLeaks struct{}
 
-func (p *GitLeaks) Parser(filename string, servicekey string) ([]models.Finding, error) {
+func (p *GitLeaks) Parser(toolInfo tool_models.ToolInfo) ([]models.Finding, error) {
 	log.Info().Msgf("Parser GitLeaks")
-	findings, err := getFindings(filename)
+	findings, err := getFindings(toolInfo.ReportFile)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return nil, err

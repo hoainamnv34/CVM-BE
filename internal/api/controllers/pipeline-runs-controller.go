@@ -3,7 +3,8 @@ package controllers
 import (
 	"net/http"
 	"strconv"
-
+	"time"
+	evaluate_pipeline_services "vulnerability-management/internal/api/services/evaluate-pipeline"
 	pipeline_run_services "vulnerability-management/internal/api/services/pipeline-run"
 	models "vulnerability-management/internal/pkg/models/pipeline-runs"
 	pipeline_runs_models "vulnerability-management/internal/pkg/models/pipeline-runs"
@@ -372,6 +373,11 @@ func EvaluatePipelineRun(c *gin.Context) {
 
 	if query.FinalRequest {
 		// TODO: Handle final request logic
+		evaluate_pipeline_services.SolvePipelineRunStatus(pipelineRun, evaluation)
+	}
+
+	if !evaluation {
+		evaluate_pipeline_services.SolvePipelineRunStatus(pipelineRun, false)
 	}
 
 	log.Info().Bool("evaluation", evaluation).Int("score", score).Msg("Pipeline run evaluated successfully in EvaluatePipelineRun")
@@ -383,5 +389,95 @@ func EvaluatePipelineRun(c *gin.Context) {
 			ThresholdScore: pipelineEvaluation.ThresholdScore,
 			Score:          uint64(score),
 		},
+	})
+}
+
+type testInfo struct {
+	TestID       uint64    `json:"test_id" form:"test_id"`
+	Name         string    `json:"name" form:"name"`
+	CreatedAt    time.Time `json:"created_at"`
+	TotalFinding uint64    `json:"total_finding"`
+	Active       uint64    `json:"active"`
+	Duplicates   uint64    `json:"duplicates"`
+}
+
+// GetTestList godoc
+// @Summary     Get list of tests in pipeline run by ID
+// @Description Get list of tests in pipeline run by ID
+// @Produce     json
+// @Param       id  path     integer true "id" min(1)
+// @Success     200 {object} http_res.HTTPResponse
+// @Router      /api/pipeline-runs/test-list/{id} [get]
+// @Tags        PipelineRun
+func GetTestList(c *gin.Context) {
+	log.Info().Msg("GetTestList initiated")
+
+	id := c.Param("id")
+
+	// Lấy thông tin PipelineRun
+	pipelineRun, err := persistence.PipelineRunRepo.Get(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Error fetching pipeline run in GetTestList")
+		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
+			Code:    http.StatusNotFound,
+			Message: "Pipeline run is not found",
+		})
+		return
+	}
+
+	// Lấy tất cả các Test liên quan đến PipelineRun
+	tests, _, err := persistence.TestRepo.Query(map[string]interface{}{"pipeline_run_id": pipelineRun.ID}, 0, 1000)
+	if err != nil {
+		log.Error().Err(err).Msgf("Error fetching tests for pipeline run ID: %d", pipelineRun.ID)
+		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
+			Code:    http.StatusNotFound,
+			Message: "Tests not found",
+		})
+		return
+	}
+
+	var testInfos []testInfo
+
+	// Lấy thông tin từng Test và tổng hợp thông tin
+	for _, test := range *tests {
+		totalFinding, count, err := persistence.FindingRepo.QueryByTestID(test.ID, 0, 1000)
+
+		if err != nil {
+			log.Error().Err(err).Msgf("Error counting findings for test ID: %d", test.ID)
+			c.JSON(http.StatusInternalServerError, http_res.HTTPResponse{
+				Code:    http.StatusInternalServerError,
+				Message: "Error counting findings for test",
+			})
+			return
+		}
+
+		activeCount := 0
+		duplicateCount := 0
+
+		for _, finding := range *totalFinding {
+			if finding.Active {
+				activeCount++
+			}
+
+			if finding.Duplicate {
+				duplicateCount++
+			}
+		}
+
+		testInfos = append(testInfos, testInfo{
+			TestID:       test.ID,
+			Name:         test.Name,
+			CreatedAt:    test.CreatedAt,
+			TotalFinding: uint64(count),
+			Active:       uint64(activeCount),
+			Duplicates:   uint64(duplicateCount),
+		})
+	}
+
+	log.Info().Msg("Test list fetched successfully in GetTestList")
+	c.JSON(http.StatusOK, http_res.HTTPResponse{
+		Code:    http.StatusOK,
+		Message: "Success",
+		Data:    testInfos,
 	})
 }

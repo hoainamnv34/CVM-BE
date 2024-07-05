@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"net/http"
 	models "vulnerability-management/internal/pkg/models/findings"
+	tool_models "vulnerability-management/internal/pkg/models/tool-types"
 
 	"github.com/rs/zerolog/log"
 )
 
 type SonarQube struct{}
 
-func (p *SonarQube) Parser(filename string, servicekey string) ([]models.Finding, error) {
+func (p *SonarQube) Parser(toolInfo tool_models.ToolInfo) ([]models.Finding, error) {
 	log.Info().Msgf("Parser SonarQube")
-	findings, err := getFindings(servicekey)
+	findings, err := getFindings(toolInfo)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return nil, err
@@ -32,19 +33,20 @@ func (p *SonarQube) RequiresFile() bool {
 	return false
 }
 
-func getFindings(servicekey string) ([]models.Finding, error) {
+func getFindings(toolInfo tool_models.ToolInfo) ([]models.Finding, error) {
 	findings := []models.Finding{}
 	client := SonarQubeClient{
-		SonarAPIURL: "https://sonarqube.vbeecore.com/api",
+		SonarAPIURL: toolInfo.Url,
 		// SonarAPIURL: "https://sonarqube.vbeecore.com/api",
 		DefaultHeaders: map[string]string{
-			"Authorization": "Bearer " + "squ_1282bb51cee8066cd8ba140d15c10029e0c9d56f",
+			// "Authorization": "Bearer " + "squ_1282bb51cee8066cd8ba140d15c10029e0c9d56f",
+			"Authorization": "Bearer " + toolInfo.ApiKey,
 		},
 		Session: &http.Client{},
 	}
 
 	// componentKey := "esupport-backend"
-	componentKey := servicekey
+	componentKey := toolInfo.ServiceKey
 	// types := "VULNERABILITY"
 	// types := "BUG"
 	// branch := ""

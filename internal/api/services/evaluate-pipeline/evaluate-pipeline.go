@@ -8,9 +8,9 @@ import (
 func SolvePipelineRunStatus(pipelineRun models.PipelineRun, evaluate bool) error {
 	// fail or success
 	if evaluate {
-		pipelineRun.Status = 2
+		pipelineRun.Status = 2 // Success
 	} else {
-		pipelineRun.Status = 3
+		pipelineRun.Status = 3 // Failure
 	}
 
 	//update

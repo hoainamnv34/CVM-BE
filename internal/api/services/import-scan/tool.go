@@ -2,10 +2,11 @@ package importscan
 
 import (
 	models "vulnerability-management/internal/pkg/models/findings"
+	tool_models "vulnerability-management/internal/pkg/models/tool-types"
 )
 
 type Tool interface {
-	Parser(filename string, servicekey string) ([]models.Finding, error)
+	Parser(toolInfo tool_models.ToolInfo) ([]models.Finding, error)
 	GetToolTypes() string
 	RequiresFile() bool
 }

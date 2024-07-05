@@ -7,15 +7,16 @@ import (
 	"os"
 	"strings"
 	models "vulnerability-management/internal/pkg/models/findings"
+	tool_models "vulnerability-management/internal/pkg/models/tool-types"
 
 	"github.com/rs/zerolog/log"
 )
 
 type Checkov struct{}
 
-func (p *Checkov) Parser(filename string, servicekey string) ([]models.Finding, error) {
+func (p *Checkov) Parser(toolInfo tool_models.ToolInfo) ([]models.Finding, error) {
 	log.Info().Msgf("Parser Checkov")
-	findings, err := getFindings(filename)
+	findings, err := getFindings(toolInfo.ReportFile)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return nil, err
@@ -155,6 +156,7 @@ func getItem(vuln map[string]interface{}, checkType string) *models.Finding {
 		Reference:      references,
 		FilePath:       filePath,
 		Line:           uint64(sourceLine),
+		Active:         true,
 		StaticFinding:  true,
 		DynamicFinding: false,
 	}

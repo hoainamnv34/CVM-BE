@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
+	"github.com/package-url/packageurl-go"
+	"github.com/rs/zerolog/log"
 	"io"
 	"os"
 	"regexp"
@@ -12,9 +14,7 @@ import (
 	"strings"
 	"time"
 	models "vulnerability-management/internal/pkg/models/findings"
-
-	"github.com/package-url/packageurl-go"
-	"github.com/rs/zerolog/log"
+	tool_models "vulnerability-management/internal/pkg/models/tool-types"
 )
 
 type Vulnerability struct {
@@ -105,9 +105,9 @@ type ProjectInfo struct {
 }
 type DependencyCheck struct{}
 
-func (p *DependencyCheck) Parser(filename string, servicekey string) ([]models.Finding, error) {
+func (p *DependencyCheck) Parser(toolInfo tool_models.ToolInfo) ([]models.Finding, error) {
 	log.Info().Msgf("Parser DependencyCheck")
-	findings, err := getFindings(filename)
+	findings, err := getFindings(toolInfo.ReportFile)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 	}

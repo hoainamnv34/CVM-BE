@@ -64,8 +64,6 @@ definitions:
         type: string
       name:
         type: string
-    required:
-    - name
     type: object
   controllers.ProjectRequest:
     properties:
@@ -79,9 +77,6 @@ definitions:
         type: integer
       repository_url:
         type: string
-    required:
-    - name
-    - project_group_id
     type: object
   controllers.TestRequest:
     properties:
@@ -124,7 +119,7 @@ definitions:
       message:
         type: string
     type: object
-  users.PipelineEvaluation:
+  pipelineevaluations.PipelineEvaluation:
     properties:
       created_at:
         type: string
@@ -170,8 +165,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
-      security:
-      - Authorization Token: []
       summary: Get Findings By Project Dashboard
       tags:
       - Dashboard
@@ -510,6 +503,14 @@ paths:
         name: tool_name
         required: true
         type: string
+      - description: url
+        in: query
+        name: url
+        type: string
+      - description: api_key
+        in: query
+        name: api_key
+        type: string
       - description: Test title
         in: query
         name: test_title
@@ -591,7 +592,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/users.PipelineEvaluation'
+          $ref: '#/definitions/pipelineevaluations.PipelineEvaluation'
       produces:
       - application/json
       responses:
@@ -656,7 +657,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/users.PipelineEvaluation'
+          $ref: '#/definitions/pipelineevaluations.PipelineEvaluation'
       produces:
       - application/json
       responses:
@@ -860,6 +861,25 @@ paths:
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
       summary: Evaluate pipeline run by ID
+      tags:
+      - PipelineRun
+  /api/pipeline-runs/test-list/{id}:
+    get:
+      description: Get list of tests in pipeline run by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Get list of tests in pipeline run by ID
       tags:
       - PipelineRun
   /api/project-groups:

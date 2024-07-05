@@ -45,7 +45,6 @@ func Setup() *gin.Engine {
 	// ================== Docs Routes
 	app.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-
 	// ================== Project groups routes
 	app.POST("/api/project-groups", controllers.CreateProjectGroup)
 	app.GET("/api/project-groups/:id", controllers.GetProjectGroupByID)
@@ -75,6 +74,7 @@ func Setup() *gin.Engine {
 	app.GET("/api/pipeline-runs", controllers.GetPipelineRuns)
 	app.PUT("/api/pipeline-runs/:id", controllers.UpdatePipelineRun)
 	app.DELETE("/api/pipeline-runs/:id", controllers.DeletePipelineRun)
+	app.GET("/api/pipeline-runs/test-list/:id", controllers.GetTestList)
 
 	// ================== Tests routes
 	app.POST("/api/tests", controllers.CreateTest)

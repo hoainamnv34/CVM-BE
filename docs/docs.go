@@ -26,11 +26,6 @@ const docTemplate = `{
     "paths": {
         "/api/dashboard/finding-type-count/{id}": {
             "get": {
-                "security": [
-                    {
-                        "Authorization Token": []
-                    }
-                ],
                 "description": "Get finding type count by Project ID",
                 "produces": [
                     "application/json"
@@ -576,6 +571,18 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "url",
+                        "name": "url",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "api_key",
+                        "name": "api_key",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "Test title",
                         "name": "test_title",
                         "in": "query",
@@ -698,7 +705,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.PipelineEvaluation"
+                            "$ref": "#/definitions/pipelineevaluations.PipelineEvaluation"
                         }
                     }
                 ],
@@ -818,7 +825,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.PipelineEvaluation"
+                            "$ref": "#/definitions/pipelineevaluations.PipelineEvaluation"
                         }
                     }
                 ],
@@ -994,6 +1001,35 @@ const docTemplate = `{
                         "description": "Final Evaluation Request?",
                         "name": "final_request",
                         "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http_res.HTTPResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/pipeline-runs/test-list/{id}": {
+            "get": {
+                "description": "Get list of tests in pipeline run by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PipelineRun"
+                ],
+                "summary": "Get list of tests in pipeline run by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -1947,9 +1983,6 @@ const docTemplate = `{
         },
         "controllers.ProjectGroupRequest": {
             "type": "object",
-            "required": [
-                "name"
-            ],
             "properties": {
                 "description": {
                     "type": "string"
@@ -1961,10 +1994,6 @@ const docTemplate = `{
         },
         "controllers.ProjectRequest": {
             "type": "object",
-            "required": [
-                "name",
-                "project_group_id"
-            ],
             "properties": {
                 "description": {
                     "type": "string"
@@ -2044,7 +2073,7 @@ const docTemplate = `{
                 }
             }
         },
-        "users.PipelineEvaluation": {
+        "pipelineevaluations.PipelineEvaluation": {
             "type": "object",
             "properties": {
                 "created_at": {

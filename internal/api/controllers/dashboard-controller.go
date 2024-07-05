@@ -24,7 +24,6 @@ type responseBody struct {
 // @Param       id  path     integer true "id" min(1)
 // @Success     200 {object} http_res.HTTPResponse
 // @Router      /api/dashboard/finding-type-count/{id} [get]
-// @Security    Authorization Token
 // @Tags        Dashboard
 func GetFindingsByProjectID(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)

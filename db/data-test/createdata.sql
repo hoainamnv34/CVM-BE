@@ -30,10 +30,12 @@ INSERT INTO "pipeline_runs" ("branch_name", "commit_hash", "project_id", "status
 
 -- Insert sample data into tool_types
 INSERT INTO "tool_types" ("name", "description") VALUES
-('Tool Type 1', 'Description for Tool Type 1'),
-('Tool Type 2', 'Description for Tool Type 2'),
-('Tool Type 3', 'Description for Tool Type 3'),
-('Tool Type 4', 'Description for Tool Type 4');
+('Gitleaks', 'Description for Tool Type 1'),
+('Checkov', 'Description for Tool Type 2'),
+('DependencyCheck', 'Description for Tool Type 3'),
+('Trivy', 'Description for Tool Type 4'),
+('Zap', 'Description for Tool Type 5'),
+('SonarQube', 'Description for Tool Type 6');
 
 -- Insert sample data into tests
 INSERT INTO "tests" ("name", "pipeline_run_id", "tool_type_id") VALUES

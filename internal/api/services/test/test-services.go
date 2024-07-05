@@ -25,26 +25,48 @@ func DeleteTest(id string) error {
 		return errors.New("Error fetching finding tests")
 	}
 
-	// Xóa tất cả các FindingTest liên quan
 	for _, findingTest := range *findingTests {
+		// Xóa tất cả các FindingTest liên quan
 		err = persistence.FindingTestRepo.Delete(&findingTest)
 		if err != nil {
 			log.Error().Err(err).Msgf("Error deleting finding test with ID: %d", findingTest.ID)
 			return errors.New("Error deleting finding test")
 		}
 
-		// Xóa các Finding liên quan
+		// Xóa Finding liên quan
 		findingID := strconv.Itoa(int(findingTest.FindingID))
 		finding, err := persistence.FindingRepo.Get(findingID)
 		if err != nil {
 			log.Error().Err(err).Msgf("Error fetching finding with ID: %d", findingTest.FindingID)
 			return errors.New("Error fetching finding")
 		}
-		err = persistence.FindingRepo.Delete(finding)
-		if err != nil {
-			log.Error().Err(err).Msgf("Error deleting finding with ID: %d", finding.ID)
-			return errors.New("Error deleting finding")
+
+		// Kiểm tra xem Finding này có thuộc nhiều Tests không
+		if finding.Duplicate {
+			// Lấy tất cả các FindingTests liên quan đến Finding này
+			findingTestsByFinding, _, err := persistence.FindingTestRepo.Query(map[string]interface{}{"finding_id": finding.ID}, 0, 1000)
+			if err != nil {
+				log.Error().Err(err).Msgf("Error fetching finding tests by finding ID: %d", finding.ID)
+				return errors.New("Error fetching finding tests by finding")
+			}
+
+			// Nếu số lượng FindingTests liên quan bằng 1 thì đặt Duplicate là false
+			if len(*findingTestsByFinding) == 1 {
+				finding.Duplicate = false
+				err = persistence.FindingRepo.Update(finding)
+				if err != nil {
+					log.Error().Err(err).Msgf("Error updating finding with ID: %d", finding.ID)
+					return errors.New("Error updating finding")
+				}
+			}
+		} else {
+			err = persistence.FindingRepo.Delete(finding)
+			if err != nil {
+				log.Error().Err(err).Msgf("Error deleting finding with ID: %d", finding.ID)
+				return errors.New("Error deleting finding")
+			}
 		}
+
 	}
 
 	// Xóa Test

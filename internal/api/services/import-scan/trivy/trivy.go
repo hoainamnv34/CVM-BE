@@ -8,15 +8,16 @@ import (
 	"strconv"
 	"strings"
 	models "vulnerability-management/internal/pkg/models/findings"
+	tool_models "vulnerability-management/internal/pkg/models/tool-types"
 
 	"github.com/rs/zerolog/log"
 )
 
 type Trivy struct{}
 
-func (p *Trivy) Parser(filename string, servicekey string) ([]models.Finding, error) {
+func (p *Trivy) Parser(toolInfo tool_models.ToolInfo) ([]models.Finding, error) {
 	log.Info().Msgf("Parser Trivy")
-	findings, err := getFindings(filename)
+	findings, err := getFindings(toolInfo.ReportFile)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return nil, err
@@ -171,17 +172,17 @@ func getItems(results []interface{}, artifactType string) []models.Finding {
 							vulDescription)
 
 						finding := models.Finding{
-							// TestID:          test,
-							Title:           title,
-							CWE:             uint64(cwe),
-							Severity:        mapSeverity(severity),
-							FilePath:        filePath,
-							Reference:       references,
-							Description: description,
-							Mitigation:      mitigation,
-							StaticFinding:   true,
-							DynamicFinding:  false,
-							VulnIDFromTool:  vulnID,
+							Title:          title,
+							CWE:            uint64(cwe),
+							Severity:       mapSeverity(severity),
+							FilePath:       filePath,
+							Reference:      references,
+							Description:    description,
+							Mitigation:     mitigation,
+							StaticFinding:  true,
+							DynamicFinding: false,
+							Active:         true,
+							VulnIDFromTool: vulnID,
 						}
 
 						items = append(items, finding)

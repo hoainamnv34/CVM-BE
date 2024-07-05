@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	models "vulnerability-management/internal/pkg/models/findings"
+	tool_models "vulnerability-management/internal/pkg/models/tool-types"
 
 	"github.com/rs/zerolog/log"
 )
@@ -46,9 +47,9 @@ type Instance struct {
 
 type Zap struct{}
 
-func (p *Zap) Parser(filename string, servicekey string) ([]models.Finding, error) {
+func (p *Zap) Parser(toolInfo tool_models.ToolInfo) ([]models.Finding, error) {
 	log.Info().Msgf("Parser Zap")
-	findings, err := getFindings(filename)
+	findings, err := getFindings(toolInfo.ReportFile)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return nil, err
@@ -105,12 +106,12 @@ func getFindings(filename string) ([]models.Finding, error) {
 		}
 
 		finding := models.Finding{
-			// TestID:          test,
 			Title:          alertItem.Alert,
 			Description:    html2text(alertItem.Description),
 			Severity:       mapSeverity(alertItem.RiskCode),
 			Mitigation:     html2text(alertItem.Solution),
 			Reference:      html2text(alertItem.Reference),
+			Active:         true,
 			DynamicFinding: true,
 			StaticFinding:  false,
 			VulnIDFromTool: alertItem.PluginID,
@@ -133,7 +134,18 @@ func getFindings(filename string) ([]models.Finding, error) {
 		// 	})
 		// }
 
-		items = append(items, finding)
+		//check duplicate
+		isDuplicate := false
+		for _, item := range items {
+			if item.Title == finding.Title {
+				isDuplicate = true
+				break
+			}
+		}
+
+		if !isDuplicate {
+			items = append(items, finding)
+		}
 	}
 
 	return items, nil

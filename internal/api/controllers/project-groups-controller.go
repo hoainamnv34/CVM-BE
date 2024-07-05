@@ -109,7 +109,7 @@ func GetProjectGroups(c *gin.Context) {
 
 // ProjectGroupRequest represents the payload for creating a project group.
 type ProjectGroupRequest struct {
-	Name        string `json:"name" binding:"required"`
+	Name        string `json:"name"`
 	Description string `json:"description"`
 }
 

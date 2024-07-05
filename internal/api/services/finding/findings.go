@@ -2,6 +2,7 @@ package finding
 
 import (
 	"errors"
+	"strconv"
 	finding_test_service "vulnerability-management/internal/api/services/finding-test"
 	finding_test_model "vulnerability-management/internal/pkg/models/finding-test"
 	models "vulnerability-management/internal/pkg/models/findings"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/rs/zerolog/log"
 )
-
 
 func DeleteFinding(id string) error {
 	log.Info().Msgf("DeleteFinding initiated for ID: %s", id)
@@ -48,7 +48,6 @@ func DeleteFinding(id string) error {
 	return nil
 }
 
-
 func SolveFinding(temp_finding models.Finding, testID uint64) error {
 	log.Info().Msg("SolveFinding initiated")
 
@@ -73,6 +72,14 @@ func SolveFinding(temp_finding models.Finding, testID uint64) error {
 	} else {
 		finding = &findings[0]
 		log.Info().Msg("Duplicate finding found in SolveFinding")
+
+		// Cập nhật finding
+		finding.Duplicate = true
+		finding, err = UpdateFinding(strconv.FormatUint(finding.ID, 10), *finding)
+		if err != nil {
+			log.Error().Err(err).Msg("Error updating finding as Duplicate in SolveFinding")
+			return err
+		}
 	}
 
 	// Create finding-test
@@ -100,7 +107,7 @@ func GetFindings(query models.Finding, page string, size string) ([]models.Findi
 		where["title"] = query.Title
 	}
 	if query.Description != "" {
-		where["risk_description"] = query.Description
+		where["description"] = query.Description
 	}
 	if query.Severity != 0 {
 		where["severity"] = query.Severity
@@ -198,4 +205,70 @@ func CountFindings(query models.Finding) (int, error) {
 	return count, nil
 }
 
+func UpdateFinding(id string, updatedFinding models.Finding) (*models.Finding, error) {
+	log.Info().Msgf("UpdateFinding initiated for ID: %s", id)
 
+	// Lấy thông tin Finding hiện tại
+	finding, err := persistence.FindingRepo.Get(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Error fetching finding in UpdateFinding")
+		return nil, errors.New("Finding is not found")
+	}
+
+	// Cập nhật các thuộc tính của Finding
+	if updatedFinding.ProjectID != 0 {
+		finding.ProjectID = updatedFinding.ProjectID
+	}
+	if updatedFinding.Title != "" {
+		finding.Title = updatedFinding.Title
+	}
+	if updatedFinding.Description != "" {
+		finding.Description = updatedFinding.Description
+	}
+	if updatedFinding.Severity != 0 {
+		finding.Severity = updatedFinding.Severity
+	}
+	if updatedFinding.CWE != 0 {
+		finding.CWE = updatedFinding.CWE
+	}
+	if updatedFinding.Line != 0 {
+		finding.Line = updatedFinding.Line
+	}
+	if updatedFinding.FilePath != "" {
+		finding.FilePath = updatedFinding.FilePath
+	}
+	if updatedFinding.VulnIDFromTool != "" {
+		finding.VulnIDFromTool = updatedFinding.VulnIDFromTool
+	}
+	if updatedFinding.Mitigation != "" {
+		finding.Mitigation = updatedFinding.Mitigation
+	}
+	if updatedFinding.Reference != "" {
+		finding.Reference = updatedFinding.Reference
+	}
+	if updatedFinding.Active != finding.Active {
+		finding.Active = updatedFinding.Active
+	}
+	if updatedFinding.DynamicFinding != finding.DynamicFinding {
+		finding.DynamicFinding = updatedFinding.DynamicFinding
+	}
+	if updatedFinding.Duplicate != finding.Duplicate {
+		finding.Duplicate = updatedFinding.Duplicate
+	}
+	if updatedFinding.RiskAccepted != finding.RiskAccepted {
+		finding.RiskAccepted = updatedFinding.RiskAccepted
+	}
+	if updatedFinding.StaticFinding != finding.StaticFinding {
+		finding.StaticFinding = updatedFinding.StaticFinding
+	}
+
+	// Cập nhật Finding trong cơ sở dữ liệu
+	err = persistence.FindingRepo.Update(finding)
+	if err != nil {
+		log.Error().Err(err).Msg("Error updating finding in UpdateFinding")
+		return nil, errors.New("Error updating finding")
+	}
+
+	log.Info().Msgf("Finding updated successfully for ID: %s", id)
+	return finding, nil
+}

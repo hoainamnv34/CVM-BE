@@ -1,4 +1,4 @@
-package users
+package tooltypes
 
 import (
 	"time"

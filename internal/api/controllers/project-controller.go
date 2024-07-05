@@ -117,9 +117,9 @@ func GetProjects(c *gin.Context) {
 
 // ProjectRequest represents the payload for creating a project.
 type ProjectRequest struct {
-	Name                 string `json:"name" binding:"required"`
+	Name                 string `json:"name"`
 	Description          string `json:"description"`
-	ProjectGroupID       uint64 `json:"project_group_id" binding:"required"`
+	ProjectGroupID       uint64 `json:"project_group_id"`
 	RepositoryURL        string `json:"repository_url"`
 	PipelineEvaluationID uint64 `json:"pipeline_evaluation_id"`
 }
@@ -155,7 +155,7 @@ func CreateProject(c *gin.Context) {
 		PipelineEvaluationID: body.PipelineEvaluationID,
 	}
 
-	res, err := persistence.ProjectRepo.Add(&project)
+	res, err := project_services.CreateProject(project)
 	if err != nil {
 		log.Error().Err(err).Msg("Error adding project in CreateProject")
 		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
