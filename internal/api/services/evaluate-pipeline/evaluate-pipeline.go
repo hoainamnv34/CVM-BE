@@ -18,9 +18,5 @@ func SolvePipelineRunStatus(pipelineRun models.PipelineRun, evaluate bool) error
 	if err != nil {
 		return err
 	}
-
-	//close finding
-	//get all findings in pipelineRun
-	//
 	return nil
 }

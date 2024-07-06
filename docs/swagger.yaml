@@ -470,6 +470,48 @@ paths:
       summary: Count findings by query parent
       tags:
       - Finding
+  /api/findings/risk-accept/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Toggle risk acceptance for finding by ID
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Toggle risk acceptance for finding by ID
+      tags:
+      - Finding
+  /api/findings/toggle-status/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Toggle finding status by ID (close or open)
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Toggle finding status by ID (close or open)
+      tags:
+      - Finding
   /api/import:
     post:
       consumes:
@@ -1252,6 +1294,33 @@ paths:
           schema:
             $ref: '#/definitions/http_res.HTTPResponse'
       summary: Update test by ID
+      tags:
+      - Test
+  /api/tests/projects/{project_id}:
+    get:
+      description: Get tests by project ID
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: integer
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_res.HTTPResponse'
+      summary: Get tests by project ID
       tags:
       - Test
   /api/tool-types:

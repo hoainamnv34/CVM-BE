@@ -203,17 +203,27 @@ func ImportTestResult(c *gin.Context) {
 		return
 	}
 
-	for _, finding := range findings {
-		finding.ProjectID = query.ProJectID
-		err = finding_services.SolveFinding(finding, test.ID)
-		if err != nil {
-			log.Error().Err(err).Msg("Error solving finding in ImportTestResult")
-			c.JSON(http.StatusInternalServerError, http_res.HTTPResponse{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			})
-			return
-		}
+	//Check duplicate
+	err = finding_services.SolveDuplicateFinding(findings, test.ID, query.ProJectID)
+	if err != nil {
+		log.Error().Err(err).Msg("Error solving finding in ImportTestResult")
+		c.JSON(http.StatusInternalServerError, http_res.HTTPResponse{
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+
+	//close finding in old test
+	err = finding_services.CloseObsoleteFindings(query.ProJectID, query.TestTitle, findings)
+	if err != nil {
+		log.Error().Err(err).Msg("Error Close Obsolete Findings in ImportTestResult")
+		c.JSON(http.StatusInternalServerError, http_res.HTTPResponse{
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		})
+		return
 	}
 
 	log.Info().Msg("File uploaded and processed successfully in ImportTestResult")

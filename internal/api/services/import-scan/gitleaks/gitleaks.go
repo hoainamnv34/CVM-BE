@@ -22,9 +22,9 @@ func (p *GitLeaks) Parser(toolInfo tool_models.ToolInfo) ([]models.Finding, erro
 		return nil, err
 	}
 
-	for _, finding := range findings {
-		log.Info().Msgf(finding.Title)
-	}
+	// for _, finding := range findings {
+	// 	log.Info().Msgf(finding.Title)
+	// }
 	return findings, nil
 }
 
@@ -78,9 +78,9 @@ func getFinding(issue map[string]interface{}, dupes map[string]models.Finding) e
 	match := issue["Match"].(string)
 	secret := issue["Secret"].(string)
 	filePath := issue["File"].(string)
-	commit := issue["Commit"].(string)
-	date := issue["Date"].(string)
-	message := issue["Message"].(string)
+	// commit := issue["Commit"].(string)
+	// date := issue["Date"].(string)
+	// message := issue["Message"].(string)
 	ruleID := issue["RuleID"].(string)
 
 	title := fmt.Sprintf("Hard coded %s found in %s", reason, filePath)
@@ -92,19 +92,19 @@ func getFinding(issue map[string]interface{}, dupes map[string]models.Finding) e
 	if match != "" {
 		description += fmt.Sprintf("**Match:** %s\n", match)
 	}
-	if message != "" {
-		if len(message) > 1 {
-			description += fmt.Sprintf("**Commit message:**\n```\n%s\n```\n", message)
-		} else {
-			description += fmt.Sprintf("**Commit message:** %s\n", message)
-		}
-	}
-	if commit != "" {
-		description += fmt.Sprintf("**Commit hash:** %s\n", commit)
-	}
-	if date != "" {
-		description += fmt.Sprintf("**Commit date:** %s\n", date)
-	}
+	// if message != "" {
+	// 	if len(message) > 1 {
+	// 		description += fmt.Sprintf("**Commit message:**\n```\n%s\n```\n", message)
+	// 	} else {
+	// 		description += fmt.Sprintf("**Commit message:** %s\n", message)
+	// 	}
+	// }
+	// if commit != "" {
+	// 	description += fmt.Sprintf("**Commit hash:** %s\n", commit)
+	// }
+	// if date != "" {
+	// 	description += fmt.Sprintf("**Commit date:** %s\n", date)
+	// }
 	if ruleID != "" {
 		description += fmt.Sprintf("**Rule Id:** %s", ruleID)
 	}

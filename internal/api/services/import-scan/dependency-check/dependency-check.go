@@ -112,9 +112,9 @@ func (p *DependencyCheck) Parser(toolInfo tool_models.ToolInfo) ([]models.Findin
 		log.Error().Msgf(err.Error())
 	}
 
-	for _, finding := range findings {
-		log.Info().Msgf(finding.Title)
-	}
+	// for _, finding := range findings {
+	// 	log.Info().Msgf(finding.Title)
+	// }
 	return findings, nil
 }
 
@@ -161,7 +161,7 @@ func getFindings(filename string) ([]models.Finding, error) {
 
 	for _, dependency := range scan.Dependencies {
 		for _, vulnerability := range dependency.Vulnerabilities {
-			fmt.Print(vulnerability)
+			// fmt.Print(vulnerability)
 			finding, err := getFindingFromVulnerability(dependency, nil, vulnerability)
 			if err != nil {
 				log.Error().Msgf("Error get Finding: %v", err)
@@ -312,7 +312,7 @@ func getComponentNameAndVersionFromDependency(dependency Dependency) (string, st
 
 	if dependency.Identifiers.Package.ID != "" {
 		purl, err := packageurl.FromString(dependency.Identifiers.Package.ID)
-		fmt.Println(purl)
+		// fmt.Println(purl)
 		if err == nil {
 
 			componentName := purl.Name

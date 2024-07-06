@@ -82,7 +82,10 @@ func Setup() *gin.Engine {
 	app.GET("/api/tests", controllers.GetTests)
 	app.PUT("/api/tests/:id", controllers.UpdateTest)
 	app.DELETE("/api/tests/:id", controllers.DeleteTest)
+	app.GET("/api/tests/projects/:project_id", controllers.GetTestsByProjectID)
 
+
+	
 	// ================== Tool types routes
 	app.POST("/api/tool-types", controllers.CreateToolType)
 	app.GET("/api/tool-types/:id", controllers.GetToolTypeByID)
@@ -100,6 +103,8 @@ func Setup() *gin.Engine {
 	app.GET("/api/findings", controllers.GetFindings)
 	app.PUT("/api/findings/:id", controllers.UpdateFinding)
 	app.DELETE("/api/findings/:id", controllers.DeleteFinding)
+	app.PUT("/api/findings/risk-accept/:id", controllers.ToggleRiskAcceptanceFinding)
+	app.PUT("/api/findings/toggle-status/:id", controllers.ToggleFindingStatus)
 
 	// ================== Import Test routes
 	app.POST("/api/import", controllers.ImportTestResult)

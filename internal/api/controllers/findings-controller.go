@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	finding_services "vulnerability-management/internal/api/services/finding"
 	models "vulnerability-management/internal/pkg/models/findings"
@@ -704,6 +705,118 @@ func DeleteFinding(c *gin.Context) {
 	}
 
 	log.Info().Msg("Finding deleted successfully in DeleteFinding")
+	c.JSON(http.StatusOK, http_res.HTTPResponse{
+		Code:    http.StatusOK,
+		Message: "Success",
+	})
+}
+
+// / ToggleFindingStatus godoc
+// @Summary     Toggle finding status by ID (close or open)
+// @Description Toggle finding status by ID (close or open)
+// @Accept      json
+// @Produce     json
+// @Param       id  path     integer true "ID" min(1)
+// @Success     200 {object} http_res.HTTPResponse
+// @Router      /api/findings/toggle-status/{id} [put]
+// @Tags        Finding
+func ToggleFindingStatus(c *gin.Context) {
+	log.Info().Msg("ToggleFindingStatus initiated")
+
+	id := c.Param("id")
+	findingID, err := strconv.ParseUint(id, 10, 64)
+	if err != nil {
+		log.Error().Err(err).Msg("Invalid finding ID")
+		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid finding ID",
+		})
+		return
+	}
+
+	finding, err := persistence.FindingRepo.Get(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Error fetching finding in ToggleFindingStatus")
+		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
+			Code:    http.StatusNotFound,
+			Message: "Finding not found",
+		})
+		return
+	}
+
+	finding.Active = !finding.Active
+	err = persistence.FindingRepo.Update(finding)
+	if err != nil {
+		log.Error().Err(err).Msg("Error updating finding in ToggleFindingStatus")
+		c.JSON(http.StatusInternalServerError, http_res.HTTPResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Error updating finding",
+		})
+		return
+	}
+
+	status := "closed"
+	if finding.Active {
+		status = "opened"
+	}
+
+	log.Info().Msgf("Finding %s successfully for ID: %d", status, findingID)
+	c.JSON(http.StatusOK, http_res.HTTPResponse{
+		Code:    http.StatusOK,
+		Message: "Success",
+	})
+}
+
+// ToggleRiskAcceptanceFinding godoc
+// @Summary     Toggle risk acceptance for finding by ID
+// @Description Toggle risk acceptance for finding by ID
+// @Accept      json
+// @Produce     json
+// @Param       id  path     integer true "ID" min(1)
+// @Success     200 {object} http_res.HTTPResponse
+// @Router      /api/findings/risk-accept/{id} [put]
+// @Tags        Finding
+func ToggleRiskAcceptanceFinding(c *gin.Context) {
+	log.Info().Msg("ToggleRiskAcceptanceFinding initiated")
+
+	id := c.Param("id")
+	findingID, err := strconv.ParseUint(id, 10, 64)
+	if err != nil {
+		log.Error().Err(err).Msg("Invalid finding ID")
+		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid finding ID",
+		})
+		return
+	}
+
+	finding, err := persistence.FindingRepo.Get(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Error fetching finding in ToggleRiskAcceptanceFinding")
+		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
+			Code:    http.StatusNotFound,
+			Message: "Finding not found",
+		})
+		return
+	}
+
+	finding.RiskAccepted = !finding.RiskAccepted
+	err = persistence.FindingRepo.Update(finding)
+	if err != nil {
+		log.Error().Err(err).Msg("Error updating finding in ToggleRiskAcceptanceFinding")
+		c.JSON(http.StatusInternalServerError, http_res.HTTPResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Error updating finding",
+		})
+		return
+	}
+
+	status := "accepted"
+	if !finding.RiskAccepted {
+		status = "unaccepted"
+	}
+
+	log.Info().Msgf("Risk %s successfully for finding ID: %d", status, findingID)
 	c.JSON(http.StatusOK, http_res.HTTPResponse{
 		Code:    http.StatusOK,
 		Message: "Success",

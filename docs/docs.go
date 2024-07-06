@@ -421,6 +421,70 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/findings/risk-accept/{id}": {
+            "put": {
+                "description": "Toggle risk acceptance for finding by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Finding"
+                ],
+                "summary": "Toggle risk acceptance for finding by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http_res.HTTPResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/findings/toggle-status/{id}": {
+            "put": {
+                "description": "Toggle finding status by ID (close or open)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Finding"
+                ],
+                "summary": "Toggle finding status by ID (close or open)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http_res.HTTPResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/findings/{id}": {
             "get": {
                 "description": "Get finding by ID",
@@ -1599,6 +1663,47 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http_res.HTTPResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tests/projects/{project_id}": {
+            "get": {
+                "description": "Get tests by project ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Test"
+                ],
+                "summary": "Get tests by project ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/http_res.HTTPResponse"
                         }

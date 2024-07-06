@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 	test_services "vulnerability-management/internal/api/services/test"
 
 	models "vulnerability-management/internal/pkg/models/tests"
@@ -255,5 +256,52 @@ func DeleteTest(c *gin.Context) {
 	c.JSON(http.StatusOK, http_res.HTTPResponse{
 		Code:    http.StatusOK,
 		Message: "Success",
+	})
+}
+
+
+// GetTestsByProjectID godoc
+// @Summary     Get tests by project ID
+// @Description Get tests by project ID
+// @Produce     json
+// @Param       project_id path     integer true  "Project ID" min(1)
+// @Param       page       query    integer false "Page number"
+// @Param       size       query    integer false "Page size"
+// @Success     200        {object} http_res.HTTPResponse
+// @Router      /api/tests/projects/{project_id} [get]
+// @Tags        Test
+func GetTestsByProjectID(c *gin.Context) {
+	log.Info().Msg("GetTestsByProjectID initiated")
+
+	projectIDStr := c.Param("project_id")
+	projectID, err := strconv.ParseUint(projectIDStr, 10, 64)
+	if err != nil {
+		log.Error().Err(err).Msg("Invalid project ID")
+		c.JSON(http.StatusBadRequest, http_res.HTTPResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid project ID",
+		})
+		return
+	}
+
+	page := c.DefaultQuery("page", "0")
+	size := c.DefaultQuery("size", "10")
+	offset, limit := helpers.GetPagination(page, size)
+
+	tests, count, err := persistence.TestRepo.QueryByProjectID(projectID, offset, limit)
+	if err != nil {
+		log.Error().Err(err).Msg("Error fetching tests by project ID")
+		c.JSON(http.StatusNotFound, http_res.HTTPResponse{
+			Code:    http.StatusNotFound,
+			Message: "Tests not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, http_res.HTTPResponse{
+		Code:      http.StatusOK,
+		Message:   "Success",
+		Data:      tests,
+		DataCount: count,
 	})
 }

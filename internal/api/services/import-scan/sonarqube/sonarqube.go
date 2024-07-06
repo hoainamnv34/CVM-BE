@@ -19,9 +19,9 @@ func (p *SonarQube) Parser(toolInfo tool_models.ToolInfo) ([]models.Finding, err
 		return nil, err
 	}
 
-	for _, finding := range findings {
-		log.Info().Msgf(finding.Title)
-	}
+	// for _, finding := range findings {
+	// 	log.Info().Msgf(finding.Title)
+	// }
 	return findings, nil
 }
 

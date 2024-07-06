@@ -2,11 +2,13 @@ package finding
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	finding_test_service "vulnerability-management/internal/api/services/finding-test"
+	test_service "vulnerability-management/internal/api/services/test"
 	finding_test_model "vulnerability-management/internal/pkg/models/finding-test"
 	models "vulnerability-management/internal/pkg/models/findings"
-	"vulnerability-management/internal/pkg/persistence"
+	persistence "vulnerability-management/internal/pkg/persistence"
 	"vulnerability-management/pkg/helpers"
 
 	"github.com/rs/zerolog/log"
@@ -48,53 +50,136 @@ func DeleteFinding(id string) error {
 	return nil
 }
 
-func SolveFinding(temp_finding models.Finding, testID uint64) error {
-	log.Info().Msg("SolveFinding initiated")
+func SolveDuplicateFinding(newFindings []models.Finding, testID uint64, projectID uint64) error {
+	log.Info().Msg("SolveDuplicateFinding initiated")
 
-	// Get findings in project
-	findings, err := GetFindings(temp_finding, "0", "100")
+	// Lấy tất cả các finding cũ trong project
+	offset, limit := helpers.GetPagination("0", "1000")
+	oldFindings, _, err := persistence.FindingRepo.QueryByProjectID(projectID, offset, limit)
 	if err != nil {
-		log.Error().Err(err).Msg("Error getting findings in SolveFinding")
+		log.Error().Err(err).Msg("Error getting findings in SolveDuplicateFinding")
 		return err
 	}
 
-	var finding *models.Finding
-	if len(findings) == 0 {
-		// Create finding
-		finding, err = persistence.FindingRepo.Add(&temp_finding)
-		if err != nil {
-			log.Error().Err(err).Msg("Error adding finding in SolveFinding")
-			return err
-		}
-	} else if len(findings) != 1 {
-		log.Error().Msg("Multiple findings found in SolveFinding")
-		return errors.New("multiple findings found")
-	} else {
-		finding = &findings[0]
-		log.Info().Msg("Duplicate finding found in SolveFinding")
 
-		// Cập nhật finding
-		finding.Duplicate = true
-		finding, err = UpdateFinding(strconv.FormatUint(finding.ID, 10), *finding)
+	// Tạo một map các findings cũ để kiểm tra sự tồn tại
+	oldFindingMap := make(map[string]models.Finding)
+	for _, oldFinding := range *oldFindings {
+		key := generateFindingKey(oldFinding)
+		oldFindingMap[key] = oldFinding
+	}
+
+	// Xử lý các finding mới
+	for _, newFinding := range newFindings {
+		newFinding.ProjectID = projectID
+
+		key := generateFindingKey(newFinding)
+		var findingID uint64
+
+		// Nếu tồn tại thì cập nhật trường Duplicate và Active
+		if oldFinding, exists := oldFindingMap[key]; exists {
+			log.Info().Msgf("Duplicate finding found for key: %s", key)
+			findingID = oldFinding.ID
+			oldFinding.Duplicate = true
+			if !oldFinding.Active {
+				oldFinding.Active = true
+			}
+
+			_, err = UpdateFinding(strconv.FormatUint(oldFinding.ID, 10), oldFinding)
+			if err != nil {
+				log.Error().Err(err).Msg("Error updating finding as Duplicate in SolveDuplicateFinding")
+				return err
+			}
+		} else {
+			// Nếu chưa tồn tại thì tạo mới
+			log.Info().Msg("Creating new finding in SolveDuplicateFinding")
+			fd, err := persistence.FindingRepo.Add(&newFinding)
+			if err != nil {
+				log.Error().Err(err).Msg("Error adding finding in SolveDuplicateFinding")
+				return err
+			}
+			findingID = fd.ID
+		}
+
+		// Tạo finding-test
+		_, err = finding_test_service.CreateFindingTest(finding_test_model.FindingTest{
+			TestID:    testID,
+			FindingID: findingID,
+		})
 		if err != nil {
-			log.Error().Err(err).Msg("Error updating finding as Duplicate in SolveFinding")
+			log.Error().Err(err).Msg("Error creating finding-test in SolveDuplicateFinding")
 			return err
 		}
 	}
 
-	// Create finding-test
-	_, err = finding_test_service.CreateFindingTest(finding_test_model.FindingTest{
-		TestID:    testID,
-		FindingID: finding.ID,
-	})
-	if err != nil {
-		log.Error().Err(err).Msg("Error creating finding-test in SolveFinding")
-		return err
-	}
-
-	log.Info().Msg("Finding solved successfully in SolveFinding")
+	log.Info().Msg("Findings processed successfully in SolveDuplicateFinding")
 	return nil
 }
+
+
+// CloseObsoleteFindings closes findings that are no longer in the new list
+func CloseObsoleteFindings(projectID uint64, testName string, newFindings []models.Finding) error {
+	log.Info().Msgf("CloseObsoleteFindings initiated for Test Name: %s", testName)
+
+	// Lấy tất cả các test cùng tên và cùng project
+	oldTests, testsCount, err := test_service.GetTestByProjectIDAndName(projectID, testName, "0", "0")
+	if err != nil {
+		log.Error().Err(err).Msgf("Error fetching tests with name: %v in projectID: %v", testName, projectID)
+		return errors.New("Error fetching tests")
+	}
+
+	if testsCount == 0 {
+		return fmt.Errorf("No test with name %v in project %v", testName, projectID)
+	}
+
+	if testsCount == 1 {
+		log.Info().Msgf("No old test with name %v in project %v", testName, projectID)
+		return nil
+	}
+
+	// Lấy test mới nhất
+	latestTest := oldTests[1]
+
+	// Lấy tất cả các Finding liên quan
+	offset, limit := helpers.GetPagination("0", "0")
+	findings, _, err := persistence.FindingRepo.QueryByTestID(latestTest.ID, offset, limit)
+
+	if err != nil {
+		log.Error().Err(err).Msgf("Error fetching findings for test ID: %d", latestTest.ID)
+		return errors.New("Error fetching findings")
+	}
+
+	// Tạo một map các findings mới để kiểm tra sự tồn tại
+	newFindingMap := make(map[string]struct{})
+	for _, newFinding := range newFindings {
+		newFinding.ProjectID = projectID
+		key := generateFindingKey(newFinding)
+		fmt.Print("new: %v", key)
+		newFindingMap[key] = struct{}{}
+	}
+
+	// Đóng các findings cũ không tồn tại trong danh sách mới
+	for _, finding := range *findings {
+		
+		key := generateFindingKey(finding)
+		fmt.Print("old: %v", key)
+		
+		if _, exists := newFindingMap[key]; !exists {
+			if finding.Active {
+				finding.Active = false
+				err = persistence.FindingRepo.Update(&finding)
+				if err != nil {
+					log.Error().Err(err).Msgf("Error closing finding with ID: %d", finding.ID)
+					return errors.New("Error closing finding")
+				}
+				log.Info().Msgf("Finding closed successfully for ID: %d", finding.ID)
+			}
+		}
+	}
+
+	return nil
+}
+
 
 func GetFindings(query models.Finding, page string, size string) ([]models.Finding, error) {
 	log.Info().Msg("GetFindings initiated")
@@ -271,4 +356,11 @@ func UpdateFinding(id string, updatedFinding models.Finding) (*models.Finding, e
 
 	log.Info().Msgf("Finding updated successfully for ID: %s", id)
 	return finding, nil
+}
+
+
+
+// generateFindingKey generates a unique key for a finding based on important fields
+func generateFindingKey(finding models.Finding) string {
+	return fmt.Sprintf("%d-%s-%d-%d-%s-%d", finding.ProjectID, finding.Title, finding.Severity, finding.Line, finding.FilePath, finding.CWE)
 }

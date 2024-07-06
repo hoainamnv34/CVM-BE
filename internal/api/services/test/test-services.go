@@ -3,7 +3,9 @@ package test
 import (
 	"errors"
 	"strconv"
+	models "vulnerability-management/internal/pkg/models/tests"
 	"vulnerability-management/internal/pkg/persistence"
+	"vulnerability-management/pkg/helpers"
 
 	"github.com/rs/zerolog/log"
 )
@@ -78,4 +80,48 @@ func DeleteTest(id string) error {
 
 	log.Info().Msgf("Test deleted successfully for ID: %s", id)
 	return nil
+}
+
+
+func GetTests(query models.Test, page string, size string) ([]models.Test, int, error) {
+	log.Info().Msg("GetTests Service initiated")
+
+	where := map[string]interface{}{}
+	if query.Name != "" {
+		where["name"] = query.Name
+	}
+	if query.PipelineRunID != 0 {
+		where["pipeline_run_id"] = query.PipelineRunID
+	}
+	if query.ToolTypeID != 0 {
+		where["tool_type_id"] = query.ToolTypeID
+	}
+
+	offset, limit := helpers.GetPagination(page, size)
+	log.Info().
+		Interface("where", where).
+		Int("offset", offset).
+		Int("limit", limit).
+		Msg("Query parameters for GetTests")
+
+	tests, count, err := persistence.TestRepo.Query(where, offset, limit)
+	if err != nil {
+		log.Error().Err(err).Msg("Error querying tests in GetTests")
+		return nil, 0,  errors.New("Tests not found")
+	}
+
+	log.Info().Int("count", count).Msg("Tests fetched successfully in GetTests")
+	return *tests,count, nil
+}
+
+func GetTestByProjectIDAndName(projectID uint64, testName string, page string, size string) ([]models.Test, int, error) {
+	log.Info().Msgf("GetTestByProjectIDAndName initiated for ProjectID: %d, TestName: %s", projectID, testName)
+	offset, limit := helpers.GetPagination(page, size)
+	tests, count, err := persistence.TestRepo.QueryByProjectIDAndName(projectID, testName, offset, limit)
+	if err != nil {
+		log.Error().Err(err).Msg("Error fetching tests in GetTestByProjectIDAndName")
+		return nil, 0, errors.New("Error fetching tests")
+	}
+
+	return *tests, count, nil
 }

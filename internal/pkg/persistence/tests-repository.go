@@ -66,3 +66,50 @@ func (r *TestRepository) Delete(test *models.Test) error {
 
 	return err
 }
+
+
+func (r *TestRepository) QueryByProjectID(projectID uint64, offset int, limit int) (*[]models.Test, int, error) {
+	tests := []models.Test{}
+
+	count := 0
+
+	query := db.DB.Table("tests").
+		Select("tests.*").
+		Joins("JOIN pipeline_runs ON pipeline_runs.id = tests.pipeline_run_id").
+		Where("pipeline_runs.project_id = ?", projectID)
+
+	err := query.Count(&count).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	err = query.Offset(offset).Limit(limit).Order("tests.id DESC").Find(&tests).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return &tests, count, err
+}
+
+func (r *TestRepository) QueryByProjectIDAndName(projectID uint64, testName string, offset int, limit int) (*[]models.Test, int, error) {
+	tests := []models.Test{}
+
+	count := 0
+
+	query := db.DB.Table("tests").
+		Select("tests.*").
+		Joins("JOIN pipeline_runs ON pipeline_runs.id = tests.pipeline_run_id").
+		Where("pipeline_runs.project_id = ? AND tests.name = ?", projectID, testName)
+
+	err := query.Count(&count).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	err = query.Offset(offset).Limit(limit).Order("tests.id DESC").Find(&tests).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return &tests, count, err
+}
