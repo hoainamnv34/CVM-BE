@@ -101,7 +101,7 @@ func getItems(results []interface{}, artifactType string) []models.Finding {
 
 	for _, targetData := range results {
 		if result, ok := targetData.(map[string]interface{}); ok {
-			if target, ok := result["Target"].(string); ok {
+			if _, ok := result["Target"].(string); ok {
 				targetTarget := result["Target"].(string)
 				targetClass := result["Class"].(string)
 				targetType := result["Type"].(string)
@@ -164,9 +164,8 @@ func getItems(results []interface{}, artifactType string) []models.Finding {
 							vulDescription = descValue
 						}
 
-						description := fmt.Sprintf("Title: %v\nTarget: %v\nType: %v\nFixed Version: %v\nDescription: %v\n",
+						description := fmt.Sprintf("Title: %v\nType: %v\nFixed Version: %v\nDescription: %v\n",
 							vulTitle,
-							target,
 							targetType,
 							mitigation,
 							vulDescription)

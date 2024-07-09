@@ -18,7 +18,7 @@ test:
 
 build-docker: build
 	@make swag
-	docker build . -t hoainamnv34/cvm:0.0.1
+	docker build . -t hoainamnv34/cvm-be:0.0.1
 
 run-docker: build-docker
 	@make swag

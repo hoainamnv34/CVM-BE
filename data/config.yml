@@ -3,13 +3,12 @@ database:
   dbname: "vul_manager"
   username: "root"
   password: "secret"
-  host: "localhost"
-  # host: "172.0.0.1"
+  # host: "localhost"
+  host: "172.17.0.1"
   port: "5432"
   max_lifetime: 7200
   max_open_conns: 150
   max_idle_conns: 50
-
 
 server:
   port: "3001"
